@@ -1,0 +1,55 @@
+2025-10-11 10:41:07,874 - __main__ - INFO - main:70 - ============================================================
+2025-10-11 10:41:07,874 - __main__ - INFO - main:71 - DATA ARCHIVE SYSTEM - Drive Scan
+2025-10-11 10:41:07,874 - __main__ - INFO - main:72 - ============================================================
+2025-10-11 10:41:07,875 - __main__ - INFO - main:73 - Drive: /mnt/e
+2025-10-11 10:41:07,875 - __main__ - INFO - main:74 - Database: output/archive.db
+2025-10-11 10:41:07,875 - __main__ - INFO - main:75 - Started: 2025-10-11 10:41:07.875601
+2025-10-11 10:41:07,875 - __main__ - INFO - main:76 - ============================================================
+2025-10-11 10:41:07,880 - utils.power_manager - WARNING - prevent_sleep:65 - Could not prevent system sleep: [Errno 2] No such file or directory: 'powershell.exe'
+2025-10-11 10:41:07,880 - utils.power_manager - INFO - prevent_sleep:66 - The scan will continue, but your system may sleep during the operation
+2025-10-11 10:41:07,880 - __main__ - INFO - main:83 - 
+--- STAGE 0: Drive Validation ---
+2025-10-11 10:41:07,886 - core.drive_validator - INFO - print_validation_report:199 - 
+============================================================
+2025-10-11 10:41:07,886 - core.drive_validator - INFO - print_validation_report:200 - DRIVE VALIDATION REPORT
+2025-10-11 10:41:07,887 - core.drive_validator - INFO - print_validation_report:201 - ============================================================
+2025-10-11 10:41:07,887 - core.drive_validator - INFO - print_validation_report:206 - 
+Drive Information:
+2025-10-11 10:41:07,887 - core.drive_validator - INFO - print_validation_report:208 -   Drive Letter: E:
+2025-10-11 10:41:07,887 - core.drive_validator - INFO - print_validation_report:230 - 
+⚠️  WARNINGS (should review):
+2025-10-11 10:41:07,888 - core.drive_validator - WARNING - print_validation_report:232 -   • Drive validation error: [Errno 8] Exec format error: '/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe'
+2025-10-11 10:41:07,888 - core.drive_validator - INFO - print_validation_report:235 - 
+============================================================
+2025-10-11 10:41:07,888 - core.drive_validator - INFO - print_validation_report:237 - ✓ Drive validation PASSED - ready to scan
+2025-10-11 10:41:07,888 - core.drive_validator - INFO - print_validation_report:240 - ============================================================
+
+2025-10-11 10:41:07,888 - __main__ - WARNING - main:96 - 
+Proceeding with scan despite warnings...
+
+2025-10-11 10:41:07,908 - core.database - INFO - _init_schema:126 - Database schema initialized
+2025-10-11 10:41:07,909 - core.database - INFO - __init__:23 - Database initialized: output/archive.db
+2025-10-11 10:41:07,909 - __main__ - INFO - main:100 - ✓ Database initialized
+2025-10-11 10:41:07,909 - core.drive_manager - INFO - __init__:24 - Platform detected: LINUX
+2025-10-11 10:41:07,909 - __main__ - INFO - main:106 - 
+--- STAGE 1: Drive Discovery ---
+2025-10-11 10:41:07,910 - core.drive_manager - WARNING - get_physical_drive_identity:43 - Physical drive identification currently only supported in WSL
+2025-10-11 10:41:07,917 - __main__ - INFO - main:112 - Drive accessible: True
+2025-10-11 10:41:07,918 - __main__ - INFO - main:113 - Total size: 110.83 GB
+2025-10-11 10:41:07,918 - __main__ - INFO - main:114 - Free space: 61.68 GB
+2025-10-11 10:41:07,918 - __main__ - INFO - main:115 - Filesystem: 9p
+2025-10-11 10:41:07,918 - __main__ - INFO - main:128 - Drive Model: Unknown Drive at /mnt/e
+2025-10-11 10:41:07,919 - __main__ - INFO - main:129 - Serial Number: UNKNOWN_f2a9d35308b1cc32
+2025-10-11 10:41:07,919 - __main__ - INFO - main:130 - Connection: Unknown
+2025-10-11 10:41:07,925 - core.database - ERROR - get_connection:35 - Database error: table drives has no column named firmware_version
+2025-10-11 10:41:07,926 - __main__ - ERROR - main:226 - 
+
+Error during scan: table drives has no column named firmware_version
+Traceback (most recent call last):
+  File "/mnt/c/Users/steve/OneDrive/Code/DataArchive/scan_drive.py", line 145, in main
+    drive_id = db.insert_drive(drive_record)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/steve/OneDrive/Code/DataArchive/core/database.py", line 131, in insert_drive
+    cursor = conn.execute("""
+             ^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: table drives has no column named firmware_version

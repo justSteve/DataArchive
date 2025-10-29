@@ -1,0 +1,12 @@
+2025-10-11 10:41:07,925 - core.database - ERROR - get_connection:35 - Database error: table drives has no column named firmware_version
+2025-10-11 10:41:07,926 - __main__ - ERROR - main:226 - 
+
+Error during scan: table drives has no column named firmware_version
+Traceback (most recent call last):
+  File "/mnt/c/Users/steve/OneDrive/Code/DataArchive/scan_drive.py", line 145, in main
+    drive_id = db.insert_drive(drive_record)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/steve/OneDrive/Code/DataArchive/core/database.py", line 131, in insert_drive
+    cursor = conn.execute("""
+             ^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: table drives has no column named firmware_version

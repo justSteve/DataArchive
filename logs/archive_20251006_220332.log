@@ -1,0 +1,80 @@
+2025-10-06 22:03:32,450 - __main__ - INFO - main:56 - ============================================================
+2025-10-06 22:03:32,450 - __main__ - INFO - main:57 - DATA ARCHIVE SYSTEM - Drive Scan
+2025-10-06 22:03:32,450 - __main__ - INFO - main:58 - ============================================================
+2025-10-06 22:03:32,451 - __main__ - INFO - main:59 - Drive: /mnt/e
+2025-10-06 22:03:32,451 - __main__ - INFO - main:60 - Database: output/archive.db
+2025-10-06 22:03:32,451 - __main__ - INFO - main:61 - Started: 2025-10-06 22:03:32.451496
+2025-10-06 22:03:32,451 - __main__ - INFO - main:62 - ============================================================
+2025-10-06 22:03:32,589 - core.database - INFO - _init_schema:122 - Database schema initialized
+2025-10-06 22:03:32,589 - core.database - INFO - __init__:23 - Database initialized: output/archive.db
+2025-10-06 22:03:32,589 - __main__ - INFO - main:67 - ✓ Database initialized
+2025-10-06 22:03:32,590 - core.drive_manager - INFO - __init__:21 - Platform detected: LINUX
+2025-10-06 22:03:32,590 - __main__ - INFO - main:73 - 
+--- STAGE 1: Drive Discovery ---
+2025-10-06 22:03:32,591 - __main__ - INFO - main:79 - Drive accessible: True
+2025-10-06 22:03:32,591 - __main__ - INFO - main:80 - Total size: 644.52 GB
+2025-10-06 22:03:32,591 - __main__ - INFO - main:81 - Free space: 320.03 GB
+2025-10-06 22:03:32,591 - __main__ - INFO - main:82 - Filesystem: 9p
+2025-10-06 22:03:32,601 - core.database - DEBUG - insert_drive:155 - Inserted/updated drive: 1
+2025-10-06 22:03:32,612 - __main__ - INFO - main:93 - ✓ Drive record created: ID 1
+2025-10-06 22:03:32,622 - core.database - INFO - start_scan:166 - Started scan session: 1
+2025-10-06 22:03:32,633 - __main__ - INFO - main:97 - ✓ Scan session started: ID 1
+2025-10-06 22:03:32,633 - __main__ - INFO - main:100 - 
+--- STAGE 2: OS Detection ---
+2025-10-06 22:03:32,634 - core.os_detector - DEBUG - __init__:20 - OSDetector initialized for: /mnt/e
+2025-10-06 22:03:32,634 - core.os_detector - INFO - detect:55 - Could not detect OS on /mnt/e
+2025-10-06 22:03:32,635 - __main__ - INFO - main:104 - OS Type: Unknown
+2025-10-06 22:03:32,635 - __main__ - INFO - main:105 - OS Name: Unknown
+2025-10-06 22:03:32,635 - __main__ - INFO - main:106 - Detection Method: None
+2025-10-06 22:03:32,635 - __main__ - INFO - main:107 - Confidence: UNKNOWN
+2025-10-06 22:03:32,636 - __main__ - INFO - main:108 - Boot Capable: False
+2025-10-06 22:03:32,644 - core.database - DEBUG - insert_os_info:199 - Inserted OS info for scan: 1
+2025-10-06 22:03:32,655 - __main__ - INFO - main:111 - ✓ OS info saved
+2025-10-06 22:03:32,655 - __main__ - INFO - main:114 - 
+--- STAGE 3: Full File Scan ---
+2025-10-06 22:03:32,656 - __main__ - INFO - main:115 - This may take 10-30 minutes for large drives...
+2025-10-06 22:03:32,656 - core.file_scanner - INFO - __init__:23 - FileScanner initialized for: /mnt/e
+2025-10-06 22:03:32,656 - core.file_scanner - INFO - scan:49 - Starting file scan of /mnt/e
+2025-10-06 22:03:32,656 - core.file_scanner - INFO - count_files:27 - Counting files...
+2025-10-07 01:45:07,895 - core.file_scanner - INFO - count_files:39 - Found approximately 915,600 files
+2025-10-07 01:45:07,936 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/CUWebinars.Azure.AccountMaintenance.exe.config: [Errno 19] No such device: '/mnt/e/CUWebinars.Azure.AccountMaintenance.exe.config'
+2025-10-07 01:45:07,937 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/CUWebinars.Azure.AddLocOrderConfirmNotifier.exe.config: [Errno 19] No such device: '/mnt/e/CUWebinars.Azure.AddLocOrderConfirmNotifier.exe.config'
+2025-10-07 01:45:07,937 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/CUWebinars.Azure.OrderConfirmNotifier.exe.config: [Errno 19] No such device: '/mnt/e/CUWebinars.Azure.OrderConfirmNotifier.exe.config'
+2025-10-07 01:45:07,938 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/CUWebinars.Azure.OrderNotifierWebJob.exe.config: [Errno 19] No such device: '/mnt/e/CUWebinars.Azure.OrderNotifierWebJob.exe.config'
+2025-10-07 01:45:07,938 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/CUWebinars.Azure.UserAccountWebJob.vshost.exe.config: [Errno 19] No such device: '/mnt/e/CUWebinars.Azure.UserAccountWebJob.vshost.exe.config'
+2025-10-07 01:45:07,939 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/DumpStack.log.tmp: [Errno 19] No such device: '/mnt/e/DumpStack.log.tmp'
+2025-10-07 01:45:07,939 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/MembershipReboot.svclog: [Errno 19] No such device: '/mnt/e/MembershipReboot.svclog'
+2025-10-07 01:45:07,940 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/pagefile.sys: [Errno 19] No such device: '/mnt/e/pagefile.sys'
+2025-10-07 01:45:07,940 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/Windows.iso: [Errno 19] No such device: '/mnt/e/Windows.iso'
+2025-10-07 01:45:07,966 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/Binaries/SOAPVDIR.CMD: [Errno 19] No such device: '/mnt/e/Binaries/SOAPVDIR.CMD'
+2025-10-07 01:45:07,967 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/Binaries/_svdir.VBS: [Errno 19] No such device: '/mnt/e/Binaries/_svdir.VBS'
+2025-10-07 01:45:07,969 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/CodeBackup/.gitattributes: [Errno 19] No such device: '/mnt/e/CodeBackup/.gitattributes'
+2025-10-07 01:45:07,970 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/CodeBackup/.gitignore: [Errno 19] No such device: '/mnt/e/CodeBackup/.gitignore'
+2025-10-07 01:45:07,971 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/CodeBackup/BankWebinars.sln: [Errno 19] No such device: '/mnt/e/CodeBackup/BankWebinars.sln'
+2025-10-07 01:45:07,971 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/CodeBackup/BankWebinars.v12.suo: [Errno 19] No such device: '/mnt/e/CodeBackup/BankWebinars.v12.suo'
+2025-10-07 01:45:07,972 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/CodeBackup/BankWebinarsDriveCitrix.sln: [Errno 19] No such device: '/mnt/e/CodeBackup/BankWebinarsDriveCitrix.sln'
+2025-10-07 01:45:07,973 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/CodeBackup/WebEssentials-Settings.json: [Errno 19] No such device: '/mnt/e/CodeBackup/WebEssentials-Settings.json'
+2025-10-07 01:45:08,022 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/FileHistory/Steve/DEVHOLMEN8_12/ca38698e-70c1-4432-b8aa-5cfe1ff8418b.fhr: [Errno 19] No such device: '/mnt/e/FileHistory/Steve/DEVHOLMEN8_12/ca38698e-70c1-4432-b8aa-5cfe1ff8418b.fhr'
+2025-10-07 01:45:08,033 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/FileHistory/Steve/DEVHOLMEN8_12/Configuration/Catalog1.edb: [Errno 19] No such device: '/mnt/e/FileHistory/Steve/DEVHOLMEN8_12/Configuration/Catalog1.edb'
+2025-10-07 01:45:08,035 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/FileHistory/Steve/DEVHOLMEN8_12/Configuration/Catalog2.edb: [Errno 19] No such device: '/mnt/e/FileHistory/Steve/DEVHOLMEN8_12/Configuration/Catalog2.edb'
+2025-10-07 01:45:08,037 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/FileHistory/Steve/DEVHOLMEN8_12/Configuration/Config1.xml: [Errno 19] No such device: '/mnt/e/FileHistory/Steve/DEVHOLMEN8_12/Configuration/Config1.xml'
+2025-10-07 01:45:08,040 - core.file_scanner - ERROR - _get_file_info:115 - Error getting file info for /mnt/e/FileHistory/Steve/DEVHOLMEN8_12/Configuration/Config2.xml: [Errno 19] No such device: '/mnt/e/FileHistory/Steve/DEVHOLMEN8_12/Configuration/Config2.xml'
+2025-10-07 01:45:16,406 - core.file_scanner - INFO - scan:87 - Scan complete: 0 files processed, 0 errors, 8 skipped
+2025-10-07 01:45:16,407 - __main__ - INFO - main:138 - ✓ File scan complete: 0 files
+2025-10-07 01:45:16,407 - __main__ - INFO - main:139 -   Total size: 0.00 GB
+2025-10-07 01:45:16,425 - core.database - INFO - complete_scan:177 - Completed scan: 1 (0 files, 0 bytes)
+2025-10-07 01:45:16,438 - __main__ - INFO - main:145 - 
+--- STAGE 4: Analysis & Statistics ---
+2025-10-07 01:45:16,445 - __main__ - INFO - main:153 - 
+============================================================
+2025-10-07 01:45:16,445 - __main__ - INFO - main:154 - SCAN COMPLETE!
+2025-10-07 01:45:16,445 - __main__ - INFO - main:155 - ============================================================
+2025-10-07 01:45:16,446 - __main__ - INFO - main:156 - Scan ID: 1
+2025-10-07 01:45:16,446 - __main__ - INFO - main:157 - Files cataloged: 0
+2025-10-07 01:45:16,446 - __main__ - INFO - main:158 - Database: output/archive.db
+2025-10-07 01:45:16,446 - __main__ - INFO - main:159 - Completed: 2025-10-07 01:45:16.446667
+2025-10-07 01:45:16,446 - __main__ - INFO - main:160 - ============================================================
+2025-10-07 01:45:16,447 - __main__ - INFO - main:162 - 
+Next steps:
+2025-10-07 01:45:16,447 - __main__ - INFO - main:163 -   1. View results: sqlite3 output/archive.db
+2025-10-07 01:45:16,447 - __main__ - INFO - main:164 -   2. Launch archive UI: python archive_ui.py

@@ -1,0 +1,15 @@
+#!/bin/bash
+# DataArchive Launcher
+# This script activates the virtual environment and runs the application
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV_DIR="$SCRIPT_DIR/venv"
+
+# Activate virtual environment
+source "$VENV_DIR/bin/activate"
+
+# Run the application with all arguments passed through
+python3 "$SCRIPT_DIR/scan_drive.py" "$@"
+
+# Deactivate when done
+deactivate

@@ -1,0 +1,26 @@
+2025-10-11 10:32:22,210 - __main__ - INFO - main:70 - ============================================================
+2025-10-11 10:32:22,211 - __main__ - INFO - main:71 - DATA ARCHIVE SYSTEM - Drive Scan
+2025-10-11 10:32:22,211 - __main__ - INFO - main:72 - ============================================================
+2025-10-11 10:32:22,211 - __main__ - INFO - main:73 - Drive: e:
+2025-10-11 10:32:22,211 - __main__ - INFO - main:74 - Database: output/archive.db
+2025-10-11 10:32:22,211 - __main__ - INFO - main:75 - Started: 2025-10-11 10:32:22.211987
+2025-10-11 10:32:22,211 - __main__ - INFO - main:76 - ============================================================
+2025-10-11 10:32:22,259 - utils.power_manager - WARNING - prevent_sleep:65 - Could not prevent system sleep: [WinError 2] The system cannot find the file specified
+2025-10-11 10:32:22,259 - utils.power_manager - INFO - prevent_sleep:66 - The scan will continue, but your system may sleep during the operation
+2025-10-11 10:32:22,259 - __main__ - INFO - main:83 - 
+--- STAGE 0: Drive Validation ---
+2025-10-11 10:32:22,260 - core.drive_validator - INFO - print_validation_report:199 - 
+============================================================
+2025-10-11 10:32:22,260 - core.drive_validator - INFO - print_validation_report:200 - DRIVE VALIDATION REPORT
+2025-10-11 10:32:22,260 - core.drive_validator - INFO - print_validation_report:201 - ============================================================
+2025-10-11 10:32:22,260 - core.drive_validator - INFO - print_validation_report:235 - 
+============================================================
+2025-10-11 10:32:22,283 - core.drive_validator - INFO - print_validation_report:240 - ============================================================
+
+2025-10-11 10:32:22,290 - core.database - INFO - _init_schema:126 - Database schema initialized
+2025-10-11 10:32:22,290 - core.database - INFO - __init__:23 - Database initialized: output\archive.db
+2025-10-11 10:32:22,291 - core.drive_manager - INFO - __init__:24 - Platform detected: WINDOWS
+2025-10-11 10:32:22,291 - __main__ - INFO - main:106 - 
+--- STAGE 1: Drive Discovery ---
+2025-10-11 10:32:22,291 - core.drive_manager - ERROR - get_drive_info:283 - Error getting drive info for e:: module 'os' has no attribute 'statvfs'
+2025-10-11 10:32:22,291 - __main__ - ERROR - main:109 - Could not get drive information

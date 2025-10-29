@@ -1,0 +1,2 @@
+2025-10-11 10:32:22,291 - core.drive_manager - ERROR - get_drive_info:283 - Error getting drive info for e:: module 'os' has no attribute 'statvfs'
+2025-10-11 10:32:22,291 - __main__ - ERROR - main:109 - Could not get drive information
