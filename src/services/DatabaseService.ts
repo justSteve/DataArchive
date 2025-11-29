@@ -166,6 +166,71 @@ export class DatabaseService {
   }
 
   /**
+   * Create or get existing drive record
+   */
+  upsertDrive(driveInfo: Partial<DriveInfo>): number {
+    const serialNumber = driveInfo.serial_number || `UNKNOWN_${Date.now()}`;
+    const model = driveInfo.model || 'Unknown Drive';
+
+    // Try to get existing drive by serial number
+    const existing = this.db.prepare(`
+      SELECT drive_id FROM drives WHERE serial_number = ?
+    `).get(serialNumber) as { drive_id: number } | undefined;
+
+    if (existing) {
+      // Update last_scanned timestamp
+      this.db.prepare(`
+        UPDATE drives SET last_scanned = ? WHERE drive_id = ?
+      `).run(new Date().toISOString(), existing.drive_id);
+      return existing.drive_id;
+    }
+
+    // Insert new drive
+    const result = this.db.prepare(`
+      INSERT INTO drives (
+        serial_number, model, manufacturer, size_bytes,
+        filesystem, connection_type, media_type, bus_type, first_seen, last_scanned
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      serialNumber,
+      model,
+      driveInfo.manufacturer || null,
+      driveInfo.size_bytes || 0,
+      driveInfo.filesystem || null,
+      driveInfo.connection_type || 'unknown',
+      driveInfo.media_type || null,
+      driveInfo.bus_type || null,
+      new Date().toISOString(),
+      new Date().toISOString()
+    );
+
+    return result.lastInsertRowid as number;
+  }
+
+  /**
+   * Create a new scan record with IN_PROGRESS status
+   */
+  createScan(driveId: number, mountPoint: string): number {
+    const result = this.db.prepare(`
+      INSERT INTO scans (drive_id, scan_start, mount_point, status)
+      VALUES (?, ?, ?, 'IN_PROGRESS')
+    `).run(driveId, new Date().toISOString(), mountPoint);
+
+    return result.lastInsertRowid as number;
+  }
+
+  /**
+   * Update scan status to CANCELLED
+   */
+  cancelScan(scanId: number): void {
+    this.db.prepare(`
+      UPDATE scans
+      SET status = 'CANCELLED', scan_end = ?
+      WHERE scan_id = ?
+    `).run(new Date().toISOString(), scanId);
+  }
+
+  /**
    * Close database connection
    */
   close(): void {

@@ -10,6 +10,8 @@ import { DriveSelector } from './components/DriveSelector';
 import { ScanProgress } from './components/ScanProgress';
 import { ScanDashboard } from './components/ScanDashboard';
 import { FileTree } from './components/FileTree';
+import { LogViewer } from './components/LogViewer';
+import { AdminPanel } from './components/AdminPanel';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -66,6 +68,8 @@ function App() {
           <Tab label="New Scan" />
           <Tab label="Monitor" />
           <Tab label="Browse Scans" />
+          <Tab label="Logs" />
+          <Tab label="Admin" />
         </Tabs>
       </Box>
 
@@ -121,6 +125,20 @@ function App() {
             <FileTree scanId={selectedScanId} />
           </Grid>
         </Grid>
+      </TabPanel>
+
+      {/* Tab 4: Server Logs */}
+      <TabPanel value={tabValue} index={3}>
+        <Box sx={{ height: '70vh' }}>
+          <LogViewer />
+        </Box>
+      </TabPanel>
+
+      {/* Tab 5: Admin Panel */}
+      <TabPanel value={tabValue} index={4}>
+        <Box sx={{ maxWidth: 800 }}>
+          <AdminPanel />
+        </Box>
       </TabPanel>
     </DashboardLayout>
   );

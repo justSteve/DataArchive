@@ -16,6 +16,7 @@ import {
 export class PythonBridge {
   private pythonPath: string;
   private pythonExecutable: string;
+  private activeScans: Map<number, ChildProcess>;
 
   constructor() {
     // Path to Python scripts
@@ -23,6 +24,8 @@ export class PythonBridge {
     // Use venv python if available
     const venvPython = path.join(this.pythonPath, 'venv/bin/python3');
     this.pythonExecutable = venvPython;
+    // Track active scan processes
+    this.activeScans = new Map();
   }
 
   /**
@@ -61,20 +64,31 @@ export class PythonBridge {
    * Get drive hardware information
    */
   async getDriveInfo(drivePath: string): Promise<DriveInfo> {
-    // TODO: Implement in Phase 2
-    // Will call: python/core/drive_manager.py
     console.log(`[PythonBridge] Getting drive info: ${drivePath}`);
 
-    return {
-      serial_number: 'PLACEHOLDER',
-      model: 'Unknown Drive',
-      size_bytes: 0,
-      connection_type: 'unknown'
-    };
+    try {
+      const result = await this.executePython<any>('get_drive_info.py', [drivePath]);
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to get drive info');
+      }
+
+      return result.drive_info;
+    } catch (error) {
+      console.error(`[PythonBridge] Failed to get drive info:`, error);
+      // Return fallback data
+      return {
+        serial_number: `UNKNOWN_${Date.now()}`,
+        model: `Drive at ${drivePath}`,
+        size_bytes: 0,
+        connection_type: 'unknown'
+      };
+    }
   }
 
   /**
-   * Start a drive scan
+   * Start a drive scan (BLOCKING - waits for completion)
+   * Use scanDriveAsync for non-blocking operation
    */
   async scanDrive(
     drivePath: string,
@@ -114,6 +128,91 @@ export class PythonBridge {
       total_size: result.total_size,
       status: 'complete'
     };
+  }
+
+  /**
+   * Start a drive scan (NON-BLOCKING - returns immediately)
+   * Process runs in background and scan_id is returned
+   * Use getScanStatus to check progress
+   */
+  async scanDriveAsync(
+    scanId: number,
+    drivePath: string,
+    dbPath: string,
+    options: ScanOptions = {}
+  ): Promise<void> {
+    console.log(`[PythonBridge] Starting async scan ${scanId}: ${drivePath}`);
+
+    // Check if scan already running
+    if (this.activeScans.has(scanId)) {
+      throw new Error(`Scan ${scanId} is already running`);
+    }
+
+    const args: string[] = [
+      drivePath,
+      '--db', dbPath,
+      '--json-output',
+      '--scan-id', scanId.toString()
+    ];
+
+    if (options.noProgress) {
+      args.push('--no-progress');
+    }
+    if (options.driveModel) {
+      args.push('--drive-model', options.driveModel);
+    }
+    if (options.driveSerial) {
+      args.push('--drive-serial', options.driveSerial);
+    }
+    if (options.driveNotes) {
+      args.push('--drive-notes', options.driveNotes);
+    }
+
+    const fullPath = path.join(this.pythonPath, 'scan_drive.py');
+    const python: ChildProcess = spawn(this.pythonExecutable, [fullPath, ...args]);
+
+    // Track this process
+    this.activeScans.set(scanId, python);
+
+    // Handle process completion
+    python.on('close', (code) => {
+      console.log(`[PythonBridge] Scan ${scanId} completed with code ${code}`);
+      this.activeScans.delete(scanId);
+    });
+
+    python.on('error', (error) => {
+      console.error(`[PythonBridge] Scan ${scanId} error:`, error);
+      this.activeScans.delete(scanId);
+    });
+  }
+
+  /**
+   * Cancel a running scan
+   */
+  cancelScan(scanId: number): boolean {
+    const process = this.activeScans.get(scanId);
+    if (!process) {
+      return false;
+    }
+
+    console.log(`[PythonBridge] Cancelling scan ${scanId}`);
+    process.kill('SIGTERM');
+    this.activeScans.delete(scanId);
+    return true;
+  }
+
+  /**
+   * Check if a scan is currently running
+   */
+  isScanRunning(scanId: number): boolean {
+    return this.activeScans.has(scanId);
+  }
+
+  /**
+   * Get all active scan IDs
+   */
+  getActiveScanIds(): number[] {
+    return Array.from(this.activeScans.keys());
   }
 
   /**

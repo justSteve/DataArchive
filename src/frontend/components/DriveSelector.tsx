@@ -14,9 +14,14 @@ import {
   Box,
   CircularProgress,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Chip
 } from '@mui/material';
-import { FolderOpen as FolderIcon, Search as SearchIcon } from '@mui/icons-material';
+import { FolderOpen as FolderIcon, Search as SearchIcon, Warning as WarningIcon } from '@mui/icons-material';
 import axios from 'axios';
 
 interface DriveSelectorProps {
@@ -30,6 +35,8 @@ export function DriveSelector({ onScanStarted }: DriveSelectorProps) {
   const [validating, setValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [duplicateInfo, setDuplicateInfo] = useState<any>(null);
 
   const handleValidate = async () => {
     if (!drivePath.trim()) {
@@ -56,7 +63,7 @@ export function DriveSelector({ onScanStarted }: DriveSelectorProps) {
     }
   };
 
-  const handleStartScan = async () => {
+  const handleStartScan = async (force: boolean = false) => {
     if (!drivePath.trim()) {
       setError('Please enter a drive path');
       return;
@@ -75,7 +82,8 @@ export function DriveSelector({ onScanStarted }: DriveSelectorProps) {
       });
 
       if (response.data.success) {
-        setSuccess(`Scan started successfully! Scan ID: ${response.data.scan_id}`);
+        const driveModel = response.data.drive_info?.model || 'Unknown';
+        setSuccess(`Scan started! Drive: ${driveModel} (Scan ID: ${response.data.scan_id})`);
         if (onScanStarted) {
           onScanStarted(response.data.scan_id);
         }
@@ -83,10 +91,27 @@ export function DriveSelector({ onScanStarted }: DriveSelectorProps) {
         setError('Failed to start scan');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'Failed to start scan');
+      // Check if this is a duplicate scan warning (409)
+      if (err.response?.status === 409 && err.response?.data?.can_proceed && !force) {
+        setDuplicateInfo(err.response.data);
+        setShowDuplicateDialog(true);
+      } else {
+        setError(err.response?.data?.message || err.response?.data?.error || 'Failed to start scan');
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleProceedWithDuplicate = () => {
+    setShowDuplicateDialog(false);
+    // TODO: Add force parameter to API to bypass duplicate check
+    setError('Duplicate scan prevention is active. Please wait 24 hours or manually remove the check in the code.');
+  };
+
+  const handleCancelDuplicate = () => {
+    setShowDuplicateDialog(false);
+    setDuplicateInfo(null);
   };
 
   return (
@@ -162,6 +187,63 @@ export function DriveSelector({ onScanStarted }: DriveSelectorProps) {
           </Typography>
         </Box>
       </CardContent>
+
+      {/* Duplicate Scan Warning Dialog */}
+      <Dialog open={showDuplicateDialog} onClose={handleCancelDuplicate}>
+        <DialogTitle>
+          <Box display="flex" alignItems="center" gap={1}>
+            <WarningIcon color="warning" />
+            Drive Recently Scanned
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {duplicateInfo?.warning}
+          </Alert>
+
+          {duplicateInfo?.drive_info && (
+            <Box mb={2}>
+              <Typography variant="subtitle2" gutterBottom>
+                Drive Information:
+              </Typography>
+              <Box display="flex" flexDirection="column" gap={1}>
+                <Chip label={`Model: ${duplicateInfo.drive_info.model}`} size="small" />
+                <Chip label={`Serial: ${duplicateInfo.drive_info.serial_number}`} size="small" />
+              </Box>
+            </Box>
+          )}
+
+          {duplicateInfo?.last_scan && (
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Last Scan:
+              </Typography>
+              <Typography variant="body2">
+                • Date: {new Date(duplicateInfo.last_scan.scan_start).toLocaleString()}
+              </Typography>
+              <Typography variant="body2">
+                • Files: {duplicateInfo.last_scan.file_count?.toLocaleString() || 'Unknown'}
+              </Typography>
+              <Typography variant="body2">
+                • Status: {duplicateInfo.last_scan.status}
+              </Typography>
+            </Box>
+          )}
+
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            Scanning the same drive multiple times in a short period may create duplicate data.
+            Are you sure you want to proceed?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDuplicate}>
+            Cancel
+          </Button>
+          <Button onClick={handleProceedWithDuplicate} variant="contained" color="warning">
+            Proceed Anyway
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }

@@ -60,6 +60,11 @@ def main():
         action='store_true',
         help='Output results as JSON for programmatic consumption'
     )
+    parser.add_argument(
+        '--scan-id',
+        type=int,
+        help='Use existing scan ID (for non-blocking scans started by API)'
+    )
 
     args = parser.parse_args()
     
@@ -172,10 +177,21 @@ def main():
             }
             drive_id = db.insert_drive(drive_record)
             logger.info(f"✓ Drive record created: ID {drive_id}")
-            
-            # Start scan session
-            scan_id = db.start_scan(drive_id, str(drive_path))
-            logger.info(f"✓ Scan session started: ID {scan_id}")
+
+            # Start scan session (or use provided scan_id)
+            if args.scan_id:
+                scan_id = args.scan_id
+                logger.info(f"✓ Using existing scan session: ID {scan_id}")
+                # Update scan with drive_id if it's a placeholder scan from API
+                with db.get_connection() as conn:
+                    conn.execute("""
+                        UPDATE scans
+                        SET drive_id = ?
+                        WHERE scan_id = ?
+                    """, (drive_id, scan_id))
+            else:
+                scan_id = db.start_scan(drive_id, str(drive_path))
+                logger.info(f"✓ Scan session started: ID {scan_id}")
             
             # Stage 2: OS Detection
             logger.info("\n--- STAGE 2: OS Detection ---")

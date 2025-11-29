@@ -1,0 +1,2 @@
+# Additional requirements for Windows Index metadata extraction
+pywin32>=306

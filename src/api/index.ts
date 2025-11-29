@@ -7,6 +7,12 @@ import { createApiServer, startServer } from '@myorg/api-server';
 import scansRouter from './routes/scans';
 import drivesRouter from './routes/drives';
 import filesRouter from './routes/files';
+import logsRouter from './routes/logs';
+import adminRouter from './routes/admin';
+import { logStream } from '../services/LogStream';
+
+// Initialize log stream (starts capturing console logs)
+logStream;
 
 // Create server with shared infrastructure
 const app = createApiServer({
@@ -18,6 +24,8 @@ const app = createApiServer({
 app.use('/api/scans', scansRouter);
 app.use('/api/drives', drivesRouter);
 app.use('/api/files', filesRouter);
+app.use('/api/logs', logsRouter);
+app.use('/api/admin', adminRouter);
 
 // Start server
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;

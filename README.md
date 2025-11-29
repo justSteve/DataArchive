@@ -429,6 +429,46 @@ python python/scan_drive.py /mnt/c --validate-only
 3. Add to appropriate tab panel
 4. Wire up state management callbacks
 
+## Database Management
+
+### Resetting the Database
+
+To reset the database to a blank slate (with automatic backup):
+
+**Option 1: Web UI (Recommended)**
+- Navigate to the "Admin" tab
+- Click "Reset Database"
+- Confirm the action
+
+**Option 2: Command Line (Interactive)**
+```bash
+./reset-database.sh
+```
+Shows database stats and asks for confirmation before resetting.
+
+**Option 3: Quick Reset (No confirmation)**
+```bash
+./quick-reset-db.sh
+```
+Immediately resets database with automatic backup.
+
+### Backups
+
+All database resets automatically create a backup at:
+```
+output/backups/archive_backup_[timestamp].db
+```
+
+To restore a backup:
+```bash
+cp output/backups/archive_backup_20251020_160000.db output/archive.db
+```
+
+View backups in the Admin tab or list manually:
+```bash
+ls -lh output/backups/
+```
+
 ## Troubleshooting
 
 ### Database Errors
@@ -439,6 +479,11 @@ python python/scan_drive.py /mnt/c --validate-only
 ```bash
 source python/venv/bin/activate
 python3 -c "from core.database import Database; Database('output/archive.db')"
+```
+
+Or use the reset script:
+```bash
+./quick-reset-db.sh
 ```
 
 ### Port Already in Use
