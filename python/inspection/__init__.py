@@ -8,14 +8,20 @@ Provides the four-pass inspection workflow:
 - Pass 4: Interactive Review (reports, decisions)
 """
 
-from .pass1_health import DriveHealthInspector
-from .pass2_os import EnhancedOSDetector
-from .pass3_metadata import MetadataCapture
-from .pass4_review import InteractiveReview
+# Pass 1: Drive Health Inspector (implemented)
+from .pass1_health import DriveHealthInspector, HealthReport, run_health_inspection
+
+# Passes 2-4 will be imported as they are implemented
+# from .pass2_os import EnhancedOSDetector
+# from .pass3_metadata import MetadataCapture
+# from .pass4_review import InteractiveReview
 
 __all__ = [
     'DriveHealthInspector',
-    'EnhancedOSDetector',
-    'MetadataCapture',
-    'InteractiveReview'
+    'HealthReport',
+    'run_health_inspection',
+    # Future passes:
+    # 'EnhancedOSDetector',
+    # 'MetadataCapture',
+    # 'InteractiveReview'
 ]
