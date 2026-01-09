@@ -4,7 +4,7 @@ DataArchive v2 Multi-Pass Inspection Module
 Provides the four-pass inspection workflow:
 - Pass 1: Drive Health (chkdsk, SMART)
 - Pass 2: OS Detection (registry-based)
-- Pass 3: Metadata Capture (files, folders)
+- Pass 3: Metadata Capture (files, folders, duplicate detection)
 - Pass 4: Interactive Review (reports, decisions)
 """
 
@@ -14,8 +14,16 @@ from .pass1_health import DriveHealthInspector, HealthReport, run_health_inspect
 # Pass 2: Enhanced OS Detection (implemented)
 from .pass2_os import EnhancedOSDetector, OSReport, run_os_inspection
 
-# Passes 3-4 will be imported as they are implemented
-# from .pass3_metadata import MetadataCapture
+# Pass 3: Metadata Capture with Duplicate Detection (implemented)
+from .pass3_metadata import (
+    MetadataCapture,
+    MetadataReport,
+    DuplicateGroup,
+    DuplicateInfo,
+    run_metadata_inspection
+)
+
+# Pass 4 will be imported when implemented
 # from .pass4_review import InteractiveReview
 
 __all__ = [
@@ -27,7 +35,12 @@ __all__ = [
     'EnhancedOSDetector',
     'OSReport',
     'run_os_inspection',
+    # Pass 3
+    'MetadataCapture',
+    'MetadataReport',
+    'DuplicateGroup',
+    'DuplicateInfo',
+    'run_metadata_inspection',
     # Future passes:
-    # 'MetadataCapture',
     # 'InteractiveReview'
 ]

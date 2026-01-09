@@ -10,6 +10,15 @@ from .registry_reader import (
     read_offline_registry,
     get_windows_version
 )
+from .hash_utils import (
+    HashResult,
+    compute_quick_hash,
+    compute_sha256,
+    hash_file,
+    files_are_duplicates,
+    generate_composite_key,
+    parse_composite_key
+)
 
 __all__ = [
     'PowerManager',
@@ -22,5 +31,13 @@ __all__ = [
     'RegistryKey',
     'RegistryReadResult',
     'read_offline_registry',
-    'get_windows_version'
+    'get_windows_version',
+    # Hash utilities for duplicate detection
+    'HashResult',
+    'compute_quick_hash',
+    'compute_sha256',
+    'hash_file',
+    'files_are_duplicates',
+    'generate_composite_key',
+    'parse_composite_key'
 ]
