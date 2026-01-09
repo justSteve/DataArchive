@@ -1,14 +1,16 @@
 /**
  * TypeScript interface to SQLite database
  * Queries the same database that Python writes to
+ *
+ * Uses bun:sqlite for Bun runtime compatibility
  */
 
-import Database from 'better-sqlite3';
+import { Database } from 'bun:sqlite';
 import path from 'path';
 import { ScanInfo, FileInfo, DriveInfo, OSInfo } from '../domain/models/types';
 
 export class DatabaseService {
-  private db: Database.Database;
+  private db: Database;
 
   constructor(dbPath: string = './output/archive.db') {
     const fullPath = path.resolve(dbPath);

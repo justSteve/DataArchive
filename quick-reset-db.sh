@@ -19,9 +19,8 @@ if [ -f "$DB_PATH" ]; then
     rm -f "$DB_PATH"
 fi
 
-# Create fresh database
-source python/venv/bin/activate
-python3 -c "
+# Create fresh database (works on both Windows and Linux)
+python -c "
 import sys
 sys.path.insert(0, 'python')
 from core.database import Database

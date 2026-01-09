@@ -1,9 +1,10 @@
 #!/bin/bash
 # Development startup script
-# Runs both API server and frontend dev server concurrently
+# Runs both API server and frontend dev server concurrently (using Bun)
 
 echo "=========================================="
 echo "DataArchive Development Environment"
+echo "(Powered by Bun)"
 echo "=========================================="
 echo ""
 echo "Starting services..."
@@ -21,7 +22,7 @@ trap cleanup SIGINT SIGTERM
 
 # Start API server in background
 echo "[1/2] Starting API server (port 3001)..."
-npm run api &
+bun run api &
 API_PID=$!
 
 # Wait a moment for API to start
@@ -29,7 +30,7 @@ sleep 2
 
 # Start frontend dev server in background
 echo "[2/2] Starting frontend dev server (port 5173)..."
-npm run dev &
+bun run dev &
 FRONTEND_PID=$!
 
 echo ""
