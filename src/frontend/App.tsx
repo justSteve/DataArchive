@@ -12,6 +12,8 @@ import { ScanDashboard } from './components/ScanDashboard';
 import { FileTree } from './components/FileTree';
 import { LogViewer } from './components/LogViewer';
 import { AdminPanel } from './components/AdminPanel';
+import { InspectionWizard } from './components/InspectionWizard';
+import { DuplicateViewer } from './components/DuplicateViewer';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -40,6 +42,7 @@ function App() {
   const [activeScanId, setActiveScanId] = useState<number | null>(null);
   const [selectedScanId, setSelectedScanId] = useState<number | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [activeInspectionId, setActiveInspectionId] = useState<number | null>(null);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -61,6 +64,11 @@ function App() {
     setTabValue(2); // Switch to Browse tab
   };
 
+  const handleInspectionComplete = (sessionId: number) => {
+    setActiveInspectionId(sessionId);
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   return (
     <DashboardLayout title="DataArchive - Drive Cataloging System">
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
@@ -68,6 +76,7 @@ function App() {
           <Tab label="New Scan" />
           <Tab label="Monitor" />
           <Tab label="Browse Scans" />
+          <Tab label="Inspections" />
           <Tab label="Logs" />
           <Tab label="Admin" />
         </Tabs>
@@ -127,15 +136,29 @@ function App() {
         </Grid>
       </TabPanel>
 
-      {/* Tab 4: Server Logs */}
+      {/* Tab 4: Inspections */}
       <TabPanel value={tabValue} index={3}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <InspectionWizard onInspectionComplete={handleInspectionComplete} />
+          </Grid>
+          {activeInspectionId && (
+            <Grid item xs={12}>
+              <DuplicateViewer sessionId={activeInspectionId} />
+            </Grid>
+          )}
+        </Grid>
+      </TabPanel>
+
+      {/* Tab 5: Server Logs */}
+      <TabPanel value={tabValue} index={4}>
         <Box sx={{ height: '70vh' }}>
           <LogViewer />
         </Box>
       </TabPanel>
 
-      {/* Tab 5: Admin Panel */}
-      <TabPanel value={tabValue} index={4}>
+      {/* Tab 6: Admin Panel */}
+      <TabPanel value={tabValue} index={5}>
         <Box sx={{ maxWidth: 800 }}>
           <AdminPanel />
         </Box>

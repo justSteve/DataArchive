@@ -212,6 +212,53 @@ export class PythonBridge {
   }
 
   /**
+   * Run an inspection pass (async, non-blocking)
+   * @param sessionId - Inspection session ID
+   * @param passNumber - Pass number (1-4)
+   * @param drivePath - Path to the drive
+   */
+  async runInspectionPass(
+    sessionId: number,
+    passNumber: number,
+    drivePath: string
+  ): Promise<void> {
+    const passScripts: Record<number, string> = {
+      1: 'inspection/pass1_health.py',
+      2: 'inspection/pass2_os.py',
+      3: 'inspection/pass3_metadata.py',
+      4: 'inspection/pass4_review.py'
+    };
+
+    const scriptPath = passScripts[passNumber];
+    if (!scriptPath) {
+      throw new Error(`Invalid pass number: ${passNumber}`);
+    }
+
+    console.log(`[PythonBridge] Running pass ${passNumber} for session ${sessionId}`);
+
+    const args: string[] = [
+      drivePath,
+      '--db', './output/archive.db',
+      '--session', sessionId.toString(),
+      '--json'
+    ];
+
+    // Pass 4 needs special handling for auto-resolve
+    if (passNumber === 4) {
+      args.push('--auto-resolve');
+    }
+
+    try {
+      const result = await this.executePython<any>(scriptPath, args);
+      console.log(`[PythonBridge] Pass ${passNumber} completed for session ${sessionId}`);
+      return result;
+    } catch (error) {
+      console.error(`[PythonBridge] Pass ${passNumber} failed:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Execute a Python script and return JSON output
    * @private
    */

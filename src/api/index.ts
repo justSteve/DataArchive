@@ -9,6 +9,9 @@ import drivesRouter from './routes/drives';
 import filesRouter from './routes/files';
 import logsRouter from './routes/logs';
 import adminRouter from './routes/admin';
+import inspectionsRouter from './routes/inspections';
+import reportsRouter from './routes/reports';
+import decisionsRouter from './routes/decisions';
 import { logStream } from '../services/LogStream';
 
 // Initialize log stream (starts capturing console logs)
@@ -26,6 +29,9 @@ app.use('/api/drives', drivesRouter);
 app.use('/api/files', filesRouter);
 app.use('/api/logs', logsRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/inspections', inspectionsRouter);
+app.use('/api/reports', reportsRouter);
+app.use('/api/decisions', decisionsRouter);
 
 // Start server
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
