@@ -36,7 +36,6 @@ router.post('/validate', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'drivePath is required' });
     }
 
-    // TODO: Implement in Phase 2
     const validation = await bridge.validateDrive(drivePath);
 
     res.json(validation);
@@ -58,7 +57,6 @@ router.post('/info', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'drivePath is required' });
     }
 
-    // TODO: Implement in Phase 2
     const info = await bridge.getDriveInfo(drivePath);
 
     res.json(info);

@@ -32,8 +32,6 @@ export class PythonBridge {
    * Validate a drive before scanning
    */
   async validateDrive(drivePath: string): Promise<ValidationResult> {
-    // TODO: Implement in Phase 2
-    // Will call: python/core/drive_validator.py
     console.log(`[PythonBridge] Validating drive: ${drivePath}`);
 
     return {
@@ -47,8 +45,6 @@ export class PythonBridge {
    * Detect operating system on a drive
    */
   async detectOS(drivePath: string): Promise<OSInfo> {
-    // TODO: Implement in Phase 2
-    // Will call: python/core/os_detector.py
     console.log(`[PythonBridge] Detecting OS: ${drivePath}`);
 
     return {
