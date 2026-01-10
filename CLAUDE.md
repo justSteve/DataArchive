@@ -167,3 +167,43 @@ taskkill /PID <pid> /F
 - Python writes during inspections/scans
 - TypeScript reads for API queries
 - Only one inspection/scan should write at a time
+
+## Claude Autonomy Grants
+
+The following permissions are explicitly granted to reduce friction and enable autonomous operation:
+
+### VS Code Environment Control
+- **CREATE/MODIFY** `.vscode/tasks.json` - Define and update development tasks
+- **CREATE/MODIFY** `.vscode/settings.json` - Configure workspace preferences (fonts, terminal, layout)
+- **CREATE/MODIFY** `.vscode/launch.json` - Debug configurations
+- **EXECUTE** development scripts without asking (`bun run api`, `bun run dev`, `start-dev.sh`)
+- **SPAWN** terminal processes for development workflows
+
+### File Operations (No Confirmation Needed)
+- Create/edit configuration files (`.vscode/*`, `*.json`, `*.md`)
+- Create/edit source code in `src/`, `python/`
+- Create reports in `output/reports/`
+- Modify `.gitignore`, `package.json`, `requirements.txt`
+
+### Development Workflow
+- Run builds: `bun run build`, `npm run build`
+- Run tests: `bun test`, `npm test`
+- Start/stop development servers
+- Database operations: `quick-reset-db.sh`, schema migrations
+
+### Cross-Project Integration
+- Reference and integrate with `c:\myStuff\IDEasPlatform` for VS Code UI control
+- Use ui-probe extension capabilities when available
+- Bridge patterns across the myStuff workspace
+
+### Explicit Constraints
+- **DO NOT** commit without explicit request
+- **DO NOT** push to remote without explicit request
+- **DO NOT** delete production data files
+- **DO NOT** modify files outside `c:\myStuff\` without asking
+
+### Dev Environment Setup (One-Keystroke)
+Run `Ctrl+Shift+B` to spawn all development terminals via tasks.json:
+- API Server (port 3001)
+- Frontend Dev (port 5173)
+- Python Inspector (activated venv)

@@ -1,0 +1,56 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "API Server",
+      "type": "shell",
+      "command": "bun run api",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "group": "dev-environment",
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Frontend Dev",
+      "type": "shell",
+      "command": "bun run dev",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "group": "dev-environment",
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Python Inspector",
+      "type": "shell",
+      "command": "cd python && .\\venv\\Scripts\\activate && echo 'Python environment ready - run inspection commands here'",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "group": "dev-environment",
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "options": {
+        "shell": {
+          "executable": "powershell.exe"
+        }
+      }
+    },
+    {
+      "label": "Start Dev Environment",
+      "dependsOn": ["API Server", "Frontend Dev", "Python Inspector"],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
