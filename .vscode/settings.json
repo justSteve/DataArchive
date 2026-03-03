@@ -18,6 +18,5 @@
       "source.organizeImports": "explicit"
     }
   },
-  "python.defaultInterpreterPath": "${workspaceFolder}/python/.venv/bin/python",
   "python.analysis.typeCheckingMode": "basic"
 }
