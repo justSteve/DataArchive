@@ -10,6 +10,7 @@ lerna-debug.log*
 dist/
 dist-frontend/
 build/
+data/
 *.tsbuildinfo
 
 # Python
@@ -38,7 +39,7 @@ output/backups/
 
 # IDE
 .idea/
-.claude/
+.claude/settings.local.json
 *.swp
 *.swo
 *~
@@ -74,3 +75,14 @@ ecosystem.config.js
 
 # Keep output directory but ignore database files
 !output/.gitkeep
+
+# GT beads runtime (not source — issues.jsonl IS tracked)
+.beads/beads.db
+.beads/beads.db-shm
+.beads/beads.db-wal
+.beads/daemon.lock
+.beads/daemon.log
+.beads/daemon.pid
+.beads/bd.sock
+.beads/.local_version
+.beads/last-touched

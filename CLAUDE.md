@@ -1,14 +1,37 @@
-# CLAUDE.md
+# DataArchive — Persistent Storage and Retrieval Service
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+**Zgent Status:** zgent (in-process toward Zgent certification)
+**Role:** Service Provider (Tier 1) — enterprise data archival, drive inspection, artifact storage
+**Bead Prefix:** `DataArchive`
 
-## Project Overview
+## STOP — Beads Gate (Read This First)
 
-DataArchive v2 is a **Claude-assisted interactive drive inspection system** using a polyglot two-tier architecture:
+You are a beads-first entity. Before doing substantive work, check for an open bead:
+
+```bash
+bd ready              # See available work
+bd create -t "title"  # Create a new bead if none covers your work
+bd update <id> --status in_progress  # Claim work
+bd close <id>         # Mark work complete
+bd sync               # Sync beads changes with git
+```
+
+**This is not optional.** No bead = no work. Reference the bead ID in all commit messages:
+```
+fix: repair scan pipeline [DataArchive-xxx]
+```
+
+## What This Is
+
+DataArchive v2 is a **Claude-assisted interactive drive inspection system** using a polyglot two-tier architecture. It provides persistent storage, retrieval, and analysis of drive contents across the enterprise.
+
+## Architecture
+
 - **Infrastructure Layer (TypeScript)**: Express API server + React UI
 - **Domain Layer (Python)**: Multi-pass inspection, file scanning, hardware detection, OS detection
 - **Integration**: TypeScript spawns Python processes via `child_process.spawn()` with JSON over stdout/stderr
 - **Database**: Shared SQLite database (`output/archive.db`)
+- **Runtime**: Bun (migrated from Node.js)
 
 ## Multi-Pass Inspection Workflow
 
@@ -19,191 +42,82 @@ DataArchive v2 is a **Claude-assisted interactive drive inspection system** usin
 | **3. Metadata** | Full folder/file metadata capture | File catalog |
 | **4. Review** | Claude-assisted decisions, duplicates | Decision report |
 
-Reports are saved to `output/reports/` for Claude analysis.
+## What Every Claude Instance Must Understand
 
-## Essential Commands
+1. **Beads-first is non-negotiable.** No substantive work without an authorizing bead.
+2. **This is an independent zgent**, not a Gas Town managed agent. Use `bd` commands, not `gt` commands.
+3. **Polyglot architecture** — TypeScript infrastructure, Python domain. JSON over stdout/stderr for IPC.
+4. **SQLite concurrency** — Python writes during inspections, TypeScript reads for API. One writer at a time.
+5. **Process communication** — always use JSON, always use `--json-output` flag, never use shell strings.
 
-### Development (Windows)
+## Service Contract
+
+### Data Capabilities
+- Drive inspection and cataloging (multi-pass)
+- File metadata capture and deduplication
+- Hardware detection and health reporting
+- Report generation for Claude analysis
+
+### Key Integration Points
+- **PythonBridge** (`src/services/PythonBridge.ts`): TS<>Python process spawning
+- **DatabaseService**: SQLite access layer
+- **Reports**: Generated to `output/reports/` in markdown format
+
+## Graduation Status
+
+- [x] Beads installed and functional
+- [x] AGENTS.md with bd quick reference
+- [x] CLAUDE.md beads gate (this deployment)
+- [x] .claude/rules deployed
+- [x] .claude/settings.json deployed
+- [x] .gitattributes full template
+- [ ] ECC session registered
+- [ ] MCP server (expose query API)
+- [ ] Session boot script
+
+## Development
 
 ```bash
 # Start both API and frontend
 ./start-dev.sh
 
 # Or manually:
-npm run api          # API server on port 3001
-npm run dev          # Frontend dev server on port 5173
+bun run api          # API server on port 3001
+bun run dev          # Frontend dev server on port 5173
 
 # Build
-npm run build
-npm run build:frontend
+bun run build
+
+# Tests
+bun test
+
+# Python environment
+cd python && source .venv/bin/activate
+pip install -r requirements.txt
+python inspect_drive.py E:\ --session-id 1
 ```
 
-### Testing
+## Key Files
 
-```bash
-npm test
-npm test -- --watch
-npm test -- --coverage
-```
-
-### Python Environment (Windows)
-
-```bash
-# Activate virtual environment
-python\venv\Scripts\activate
-
-# Install dependencies
-cd python && pip install -r requirements.txt
-
-# Run inspection (new v2 workflow)
-python python/inspect_drive.py E:\ --session-id 1
-
-# Legacy scan (v1 compatibility)
-python python/scan_drive.py C:\ --db output/archive.db --json-output
-```
-
-## Directory Structure
-
-```
-DataArchive/
-├── archive/v1-batch/          # Historical v1 documentation
-├── docs/                      # Consolidated documentation
-├── output/
-│   ├── archive.db            # SQLite database
-│   └── reports/              # Claude analysis reports
-├── python/
-│   ├── core/                 # Database, scanner, OS detector
-│   ├── inspection/           # Multi-pass modules (pass1-4)
-│   ├── reports/              # Report generation
-│   └── utils/                # Helpers (hash, registry, chkdsk)
-├── src/
-│   ├── api/routes/           # Express routes (incl. inspections.ts)
-│   ├── frontend/components/  # React UI (incl. InspectionWizard)
-│   └── services/             # PythonBridge, DatabaseService
-```
-
-## Key Integration Points
-
-### PythonBridge Service (`src/services/PythonBridge.ts`)
-
-**Legacy Methods:**
-- `scanDrive()` - Blocking full drive scan (v1)
-- `scanDriveAsync()` - Non-blocking scan (v1)
-
-**Inspection Methods (v2):**
-- `startInspection(driveId, drivePath)` - Create inspection session
-- `runPass(sessionId, passNumber)` - Execute specific pass
-- `getPassReport(sessionId, passNumber)` - Retrieve pass results
-
-### Database Schema
-
-**Core Tables (v1 - preserved):**
-- `drives`, `scans`, `files`, `os_info`, `scan_statistics`
-
-**Inspection Tables (v2 - new):**
-- `inspection_sessions` - Multi-pass session tracking
-- `inspection_passes` - Per-pass results and reports
-- `inspection_decisions` - User/Claude decisions
-- `file_hashes` - Duplicate detection
-
-### Report Generation
-
-Reports for Claude analysis follow this format:
-```markdown
-# Drive Inspection Report: [Model] (S/N: [Serial])
-
-## Summary
-- Health: [status] | OS: [version] | Files: [count]
-
-## Decision Points
-### 1. [Decision Type]
-[Description and options]
-
-## Recommended Actions
-[Numbered list]
-```
-
-## Platform Handling
-
-- **Windows dev**: Direct Python/PowerShell execution
-- **WSL inspection**: PowerShell via `powershell.exe`, filesystem via `/mnt/`
-- **Detection**: Check `platform.uname().release` for "microsoft"
-
-## Beads Integration
-
-Use beads for inspection issue tracking:
-```bash
-bd create "Inspect: WD Elements 2TB" --type=task --priority=2
-bd update <id> --status=in_progress
-bd close <id> --reason="Completed"
-```
-
-## Troubleshooting
-
-### Database not initialized
-```bash
-./quick-reset-db.sh
-```
-
-### Python venv not activated
-```bash
-cd python && venv\Scripts\activate && pip install -r requirements.txt
-```
-
-### Port already in use (Windows)
-```powershell
-netstat -ano | findstr :3001
-taskkill /PID <pid> /F
-```
+| Path | Purpose |
+|------|---------|
+| `src/services/PythonBridge.ts` | TS<>Python integration |
+| `src/api/routes/` | Express API routes |
+| `src/frontend/components/` | React UI components |
+| `python/inspection/` | Multi-pass inspection modules |
+| `python/core/` | Database, scanner, OS detector |
+| `output/archive.db` | SQLite database |
+| `output/reports/` | Generated inspection reports |
+| `.beads/issues.jsonl` | Work authorization tracking |
 
 ## Important Constraints
 
 ### Process Communication
-- **Always use JSON** for Python→TypeScript data exchange
+- **Always use JSON** for Python<>TypeScript data exchange
 - **Always use `--json-output`** flag when calling Python scripts
-- **Never use shell strings** - use argument arrays to prevent injection
+- **Never use shell strings** — use argument arrays to prevent injection
 
 ### SQLite Concurrency
 - Python writes during inspections/scans
 - TypeScript reads for API queries
 - Only one inspection/scan should write at a time
-
-## Claude Autonomy Grants
-
-The following permissions are explicitly granted to reduce friction and enable autonomous operation:
-
-### VS Code Environment Control
-- **CREATE/MODIFY** `.vscode/tasks.json` - Define and update development tasks
-- **CREATE/MODIFY** `.vscode/settings.json` - Configure workspace preferences (fonts, terminal, layout)
-- **CREATE/MODIFY** `.vscode/launch.json` - Debug configurations
-- **EXECUTE** development scripts without asking (`bun run api`, `bun run dev`, `start-dev.sh`)
-- **SPAWN** terminal processes for development workflows
-
-### File Operations (No Confirmation Needed)
-- Create/edit configuration files (`.vscode/*`, `*.json`, `*.md`)
-- Create/edit source code in `src/`, `python/`
-- Create reports in `output/reports/`
-- Modify `.gitignore`, `package.json`, `requirements.txt`
-
-### Development Workflow
-- Run builds: `bun run build`, `npm run build`
-- Run tests: `bun test`, `npm test`
-- Start/stop development servers
-- Database operations: `quick-reset-db.sh`, schema migrations
-
-### Cross-Project Integration
-- Reference and integrate with `c:\myStuff\IDEasPlatform` for VS Code UI control
-- Use ui-probe extension capabilities when available
-- Bridge patterns across the myStuff workspace
-
-### Explicit Constraints
-- **DO NOT** commit without explicit request
-- **DO NOT** push to remote without explicit request
-- **DO NOT** delete production data files
-- **DO NOT** modify files outside `c:\myStuff\` without asking
-
-### Dev Environment Setup (One-Keystroke)
-Run `Ctrl+Shift+B` to spawn all development terminals via tasks.json:
-- API Server (port 3001)
-- Frontend Dev (port 5173)
-- Python Inspector (activated venv)
