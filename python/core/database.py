@@ -3,6 +3,7 @@ Database interface for Data Archive System
 """
 
 import sqlite3
+import time
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, List, Any
@@ -23,19 +24,80 @@ class Database:
         logger.info(f"Database initialized: {self.db_path}")
     
     @contextmanager
-    def get_connection(self):
-        """Context manager for database connections"""
-        conn = sqlite3.connect(str(self.db_path))
-        conn.row_factory = sqlite3.Row
-        try:
-            yield conn
-            conn.commit()
-        except Exception as e:
-            conn.rollback()
-            logger.error(f"Database error: {e}")
-            raise
-        finally:
-            conn.close()
+    def get_connection(self, operation_name: str = "unknown", max_retries: int = 3):
+        """
+        Context manager for database connections with retry logic.
+
+        Args:
+            operation_name: Name of the operation for logging context
+            max_retries: Maximum number of retries on database lock (default: 3)
+        """
+        retry_count = 0
+        last_error = None
+
+        while retry_count <= max_retries:
+            try:
+                conn = sqlite3.connect(str(self.db_path), timeout=30.0)
+                conn.row_factory = sqlite3.Row
+
+                try:
+                    yield conn
+                    conn.commit()
+                    return  # Success
+
+                except sqlite3.OperationalError as e:
+                    conn.rollback()
+                    if "locked" in str(e).lower() and retry_count < max_retries:
+                        retry_count += 1
+                        delay = min(2 ** (retry_count - 1), 8)  # Exponential backoff: 1s, 2s, 4s, 8s
+                        logger.warning(
+                            f"Database locked during {operation_name}, retrying in {delay}s "
+                            f"(attempt {retry_count}/{max_retries})"
+                        )
+                        time.sleep(delay)
+                        last_error = e
+                        continue  # Retry with new connection
+                    else:
+                        logger.error(
+                            f"Database operation failed: {operation_name}",
+                            extra={"error": str(e), "operation": operation_name},
+                            exc_info=True
+                        )
+                        raise
+
+                except sqlite3.IntegrityError as e:
+                    conn.rollback()
+                    logger.warning(f"Integrity constraint violation in {operation_name}: {e}")
+                    raise
+
+                except Exception as e:
+                    conn.rollback()
+                    logger.error(
+                        f"Unexpected error in {operation_name}: {e}",
+                        extra={"operation": operation_name},
+                        exc_info=True
+                    )
+                    raise
+
+                finally:
+                    conn.close()
+
+            except sqlite3.Error as e:
+                # Connection-level error
+                if retry_count < max_retries:
+                    retry_count += 1
+                    delay = min(2 ** (retry_count - 1), 8)
+                    logger.warning(f"Failed to connect to database, retrying in {delay}s: {e}")
+                    time.sleep(delay)
+                    last_error = e
+                    continue
+                else:
+                    logger.error(f"Failed to connect to database after {max_retries} retries: {e}", exc_info=True)
+                    raise
+
+        # If we get here, all retries failed
+        if last_error:
+            raise last_error
     
     def _init_schema(self):
         """Initialize database schema"""
@@ -218,7 +280,7 @@ class Database:
     
     def insert_drive(self, drive_info: Dict[str, Any]) -> int:
         """Insert or update drive information"""
-        with self.get_connection() as conn:
+        with self.get_connection("insert_drive") as conn:
             cursor = conn.execute("""
                 INSERT INTO drives (
                     serial_number, model, manufacturer, size_bytes,
@@ -261,7 +323,7 @@ class Database:
     
     def start_scan(self, drive_id: int, mount_point: str) -> int:
         """Start a new scan session"""
-        with self.get_connection() as conn:
+        with self.get_connection("start_scan") as conn:
             cursor = conn.execute("""
                 INSERT INTO scans (drive_id, scan_start, mount_point, status)
                 VALUES (?, ?, ?, 'IN_PROGRESS')
@@ -272,7 +334,7 @@ class Database:
     
     def complete_scan(self, scan_id: int, file_count: int, total_size: int):
         """Mark scan as complete"""
-        with self.get_connection() as conn:
+        with self.get_connection("complete_scan") as conn:
             conn.execute("""
                 UPDATE scans 
                 SET scan_end = ?, file_count = ?, total_size_bytes = ?, status = 'COMPLETE'
@@ -303,8 +365,8 @@ class Database:
             logger.debug(f"Inserted OS info for scan: {scan_id}")
     
     def insert_files_batch(self, scan_id: int, files: List[Dict[str, Any]]):
-        """Batch insert files"""
-        with self.get_connection() as conn:
+        """Batch insert files with retry on lock"""
+        with self.get_connection("insert_files_batch") as conn:
             conn.executemany("""
                 INSERT INTO files (
                     scan_id, path, size_bytes, modified_date, created_date,

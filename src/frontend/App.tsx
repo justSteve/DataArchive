@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { DashboardLayout } from '@myorg/dashboard-ui';
 import { Grid, Box, Tabs, Tab } from '@mui/material';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { DriveSelector } from './components/DriveSelector';
 import { ScanProgress } from './components/ScanProgress';
 import { ScanDashboard } from './components/ScanDashboard';
@@ -69,8 +70,17 @@ function App() {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
+    // Log to console for now - could be extended to report to backend
+    console.error('[App] Error caught by ErrorBoundary:', {
+      error: error.message,
+      componentStack: errorInfo.componentStack
+    });
+  };
+
   return (
-    <DashboardLayout title="DataArchive - Drive Cataloging System">
+    <ErrorBoundary onError={handleError}>
+      <DashboardLayout title="DataArchive - Drive Cataloging System">
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
         <Tabs value={tabValue} onChange={handleTabChange}>
           <Tab label="New Scan" />
@@ -164,6 +174,7 @@ function App() {
         </Box>
       </TabPanel>
     </DashboardLayout>
+    </ErrorBoundary>
   );
 }
 

@@ -21,9 +21,23 @@ export class PythonBridge {
   constructor() {
     // Path to Python scripts
     this.pythonPath = path.join(__dirname, '../../python');
-    // Use venv python if available
-    const venvPython = path.join(this.pythonPath, 'venv/bin/python3');
-    this.pythonExecutable = venvPython;
+
+    // Detect platform and use correct Python path
+    const isWindows = process.platform === 'win32';
+    const venvPython = isWindows
+      ? path.join(this.pythonPath, 'venv/Scripts/python.exe')
+      : path.join(this.pythonPath, 'venv/bin/python3');
+
+    // Use venv if available, otherwise fall back to system python
+    const fs = require('fs');
+    if (fs.existsSync(venvPython)) {
+      this.pythonExecutable = venvPython;
+      console.log(`[PythonBridge] Using venv Python: ${venvPython}`);
+    } else {
+      this.pythonExecutable = isWindows ? 'python' : 'python3';
+      console.log(`[PythonBridge] Using system Python: ${this.pythonExecutable}`);
+    }
+
     // Track active scan processes
     this.activeScans = new Map();
   }
@@ -167,17 +181,68 @@ export class PythonBridge {
     const fullPath = path.join(this.pythonPath, 'scan_drive.py');
     const python: ChildProcess = spawn(this.pythonExecutable, [fullPath, ...args]);
 
+    // Buffers for output capture
+    let stdoutBuffer = '';
+    let stderrBuffer = '';
+
+    // Capture stdout for progress updates
+    python.stdout?.on('data', (data) => {
+      const output = data.toString();
+      stdoutBuffer += output;
+
+      // Try to parse JSON progress updates
+      const lines = output.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('{')) {
+          try {
+            const progress = JSON.parse(trimmed);
+            if (progress.files_processed !== undefined) {
+              console.log(`[PythonBridge] Scan ${scanId} progress: ${progress.files_processed} files`);
+              // TODO: Update database with progress via DatabaseService
+              // db.updateScanProgress(scanId, progress.files_processed, progress.total_size);
+            }
+          } catch (parseError) {
+            // Not valid JSON, just log as regular output
+            if (trimmed.length > 0) {
+              console.log(`[PythonBridge] Scan ${scanId} output: ${trimmed}`);
+            }
+          }
+        }
+      }
+    });
+
+    // Capture stderr for error diagnostics
+    python.stderr?.on('data', (data) => {
+      const error = data.toString();
+      stderrBuffer += error;
+      console.error(`[PythonBridge] Scan ${scanId} stderr: ${error.trim()}`);
+    });
+
     // Track this process
     this.activeScans.set(scanId, python);
 
     // Handle process completion
     python.on('close', (code) => {
       console.log(`[PythonBridge] Scan ${scanId} completed with code ${code}`);
+
+      if (code !== 0) {
+        console.error(`[PythonBridge] Scan ${scanId} failed with code ${code}`);
+        const errorMessage = stderrBuffer.trim() || `Process exited with code ${code}`;
+        console.error(`[PythonBridge] Scan ${scanId} error details: ${errorMessage}`);
+        // TODO: Mark scan as failed in database
+        // db.failScan(scanId, errorMessage);
+      }
+
       this.activeScans.delete(scanId);
     });
 
     python.on('error', (error) => {
-      console.error(`[PythonBridge] Scan ${scanId} error:`, error);
+      console.error(`[PythonBridge] Scan ${scanId} process error:`, error);
+      const errorMessage = `Process spawn error: ${error.message}`;
+      console.error(`[PythonBridge] Scan ${scanId} error details: ${errorMessage}`);
+      // TODO: Mark scan as failed in database
+      // db.failScan(scanId, errorMessage);
       this.activeScans.delete(scanId);
     });
   }

@@ -12,6 +12,7 @@ import adminRouter from './routes/admin';
 import inspectionsRouter from './routes/inspections';
 import reportsRouter from './routes/reports';
 import decisionsRouter from './routes/decisions';
+import monitoringRouter from './routes/monitoring';
 import { logStream } from '../services/LogStream';
 
 // Initialize log stream (starts capturing console logs)
@@ -32,6 +33,7 @@ app.use('/api/admin', adminRouter);
 app.use('/api/inspections', inspectionsRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/decisions', decisionsRouter);
+app.use('/api/monitoring', monitoringRouter);
 
 // Start server
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
