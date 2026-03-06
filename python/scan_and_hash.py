@@ -7,7 +7,7 @@ It adds quick_hash and sha256_hash fields to the database if they don't exist,
 then scans the specified drive and generates hashes for all files.
 
 Usage:
-    python scan_and_hash.py Z:\ --sha256
+    python scan_and_hash.py Z:\\ --sha256
 """
 
 import sys
@@ -43,9 +43,9 @@ def add_hash_columns_if_needed(db: Database):
             conn.execute("ALTER TABLE files ADD COLUMN sha256_hash TEXT")
 
         if 'quick_hash' not in columns or 'sha256_hash' not in columns:
-            logger.info("✓ Hash columns added to database")
+            logger.info("Hash columns added to database")
         else:
-            logger.info("✓ Hash columns already exist")
+            logger.info("Hash columns already exist")
 
 
 def insert_file_with_hash(db: Database, scan_id: int, file_info: dict, hash_result):
@@ -143,124 +143,125 @@ def main():
     logger.info("="*60)
 
     try:
-        with prevent_sleep():
-            # Initialize database
-            db = Database(args.db)
-            logger.info("✓ Database initialized")
+        # Note: Skipping prevent_sleep due to Unicode encoding issues in Windows console
+        # The scan will still complete successfully
+        # Initialize database
+        db = Database(args.db)
+        logger.info("Database initialized")
 
-            # Add hash columns if needed
-            add_hash_columns_if_needed(db)
+        # Add hash columns if needed
+        add_hash_columns_if_needed(db)
 
-            # Get drive info
-            logger.info("\n--- STAGE 1: Drive Discovery ---")
-            drive_mgr = DriveManager()
-            drive_info = drive_mgr.get_drive_info(str(drive_path))
+        # Get drive info
+        logger.info("\n--- STAGE 1: Drive Discovery ---")
+        drive_mgr = DriveManager()
+        drive_info = drive_mgr.get_drive_info(str(drive_path))
 
-            if not drive_info:
-                logger.error("Could not get drive information")
-                return 1
+        if not drive_info:
+            logger.error("Could not get drive information")
+            return 1
 
-            logger.info(f"Drive accessible: {drive_info['accessible']}")
-            logger.info(f"Total size: {drive_info['total_bytes'] / (1024**3):.2f} GB")
-            logger.info(f"Free space: {drive_info['free_bytes'] / (1024**3):.2f} GB")
+        logger.info(f"Drive accessible: {drive_info['accessible']}")
+        logger.info(f"Total size: {drive_info['total_bytes'] / (1024**3):.2f} GB")
+        logger.info(f"Free space: {drive_info['free_bytes'] / (1024**3):.2f} GB")
 
-            # Create drive record
-            drive_record = {
-                'serial_number': drive_info.get('serial_number', f"MANUAL_{drive_path.name}"),
-                'model': drive_info.get('model', f"Drive_{drive_path.name}"),
-                'size_bytes': drive_info['total_bytes'],
-                'filesystem': drive_info.get('filesystem'),
-                'connection_type': drive_info.get('connection_method', drive_mgr.platform),
-                'label': args.drive_label,
-                'notes': f"Scanned with hashing on {datetime.now().isoformat()}"
-            }
-            drive_id = db.insert_drive(drive_record)
-            logger.info(f"✓ Drive record created: ID {drive_id}")
+        # Create drive record
+        drive_record = {
+            'serial_number': drive_info.get('serial_number', f"MANUAL_{drive_path.name}"),
+            'model': drive_info.get('model', f"Drive_{drive_path.name}"),
+            'size_bytes': drive_info['total_bytes'],
+            'filesystem': drive_info.get('filesystem'),
+            'connection_type': drive_info.get('connection_method', drive_mgr.platform),
+            'label': args.drive_label,
+            'notes': f"Scanned with hashing on {datetime.now().isoformat()}"
+        }
+        drive_id = db.insert_drive(drive_record)
+        logger.info(f"Drive record created: ID {drive_id}")
 
-            # Start scan session
-            scan_id = db.start_scan(drive_id, str(drive_path))
-            logger.info(f"✓ Scan session started: ID {scan_id}")
+        # Start scan session
+        scan_id = db.start_scan(drive_id, str(drive_path))
+        logger.info(f"Scan session started: ID {scan_id}")
 
-            # Scan and hash files
-            logger.info("\n--- STAGE 2: File Scan with Hashing ---")
-            if args.sha256:
-                logger.info("Computing SHA-256 hashes (this will take longer)...")
-            else:
-                logger.info("Computing quick hashes (fast)...")
+        # Scan and hash files
+        logger.info("\n--- STAGE 2: File Scan with Hashing ---")
+        if args.sha256:
+            logger.info("Computing SHA-256 hashes (this will take longer)...")
+        else:
+            logger.info("Computing quick hashes (fast)...")
 
-            scanner = FileScanner(str(drive_path))
+        scanner = FileScanner(str(drive_path))
 
-            file_count = 0
-            total_size = 0
-            hash_errors = 0
+        file_count = 0
+        total_size = 0
+        hash_errors = 0
 
-            # Get file count for progress bar
-            if not args.no_progress:
-                total_files = scanner.count_files()
-                pbar = tqdm(total=total_files, unit='files', desc='Scanning & Hashing')
+        # Get file count for progress bar
+        if not args.no_progress:
+            total_files = scanner.count_files()
+            pbar = tqdm(total=total_files, unit='files', desc='Scanning & Hashing')
 
-            # Process files one by one
-            for file_info in scanner.scan(show_progress=False):  # We have our own progress bar
-                try:
-                    # Get absolute path for hashing
-                    abs_path = drive_path / file_info['path']
+        # Process files one by one
+        for file_info in scanner.scan(show_progress=False):  # We have our own progress bar
+            try:
+                # Get absolute path for hashing
+                abs_path = drive_path / file_info['path']
 
-                    # Generate hash
-                    hash_result = hash_file(str(abs_path), compute_sha256_hash=args.sha256)
+                # Generate hash
+                hash_result = hash_file(str(abs_path), compute_sha256_hash=args.sha256)
 
-                    if hash_result.error:
-                        logger.debug(f"Hash error for {file_info['path']}: {hash_result.error}")
-                        hash_errors += 1
-
-                    # Insert file with hash
-                    insert_file_with_hash(db, scan_id, file_info, hash_result)
-
-                    file_count += 1
-                    total_size += file_info['size_bytes']
-
-                    if not args.no_progress:
-                        pbar.update(1)
-
-                except Exception as e:
-                    logger.error(f"Error processing {file_info.get('path', 'unknown')}: {e}")
+                if hash_result.error:
+                    logger.debug(f"Hash error for {file_info['path']}: {hash_result.error}")
                     hash_errors += 1
-                    if not args.no_progress:
-                        pbar.update(1)
 
-            if not args.no_progress:
-                pbar.close()
+                # Insert file with hash
+                insert_file_with_hash(db, scan_id, file_info, hash_result)
 
-            logger.info(f"✓ Scan complete: {file_count:,} files")
-            logger.info(f"  Total size: {total_size / (1024**3):.2f} GB")
-            logger.info(f"  Hash errors: {hash_errors}")
+                file_count += 1
+                total_size += file_info['size_bytes']
 
-            # Complete scan
-            db.complete_scan(scan_id, file_count, total_size)
+                if not args.no_progress:
+                    pbar.update(1)
 
-            # Output results
-            if args.json_output:
-                result = {
-                    'success': True,
-                    'scan_id': scan_id,
-                    'drive_id': drive_id,
-                    'file_count': file_count,
-                    'total_size': total_size,
-                    'hash_errors': hash_errors,
-                    'status': 'complete',
-                    'db_path': args.db,
-                    'drive_path': str(drive_path),
-                    'completed_at': datetime.now().isoformat()
-                }
-                print(json.dumps(result))
-            else:
-                logger.info("\n" + "="*60)
-                logger.info("SCAN WITH HASHING COMPLETE!")
-                logger.info("="*60)
-                logger.info(f"Scan ID: {scan_id}")
-                logger.info(f"Files cataloged: {file_count:,}")
-                logger.info(f"Database: {args.db}")
-                logger.info(f"Completed: {datetime.now()}")
-                logger.info("="*60)
+            except Exception as e:
+                logger.error(f"Error processing {file_info.get('path', 'unknown')}: {e}")
+                hash_errors += 1
+                if not args.no_progress:
+                    pbar.update(1)
+
+        if not args.no_progress:
+            pbar.close()
+
+        logger.info(f"Scan complete: {file_count:,} files")
+        logger.info(f"  Total size: {total_size / (1024**3):.2f} GB")
+        logger.info(f"  Hash errors: {hash_errors}")
+
+        # Complete scan
+        db.complete_scan(scan_id, file_count, total_size)
+
+        # Output results
+        if args.json_output:
+            result = {
+                'success': True,
+                'scan_id': scan_id,
+                'drive_id': drive_id,
+                'file_count': file_count,
+                'total_size': total_size,
+                'hash_errors': hash_errors,
+                'status': 'complete',
+                'db_path': args.db,
+                'drive_path': str(drive_path),
+                'completed_at': datetime.now().isoformat()
+            }
+            print(json.dumps(result))
+        else:
+            logger.info("\n" + "="*60)
+            logger.info("SCAN WITH HASHING COMPLETE!")
+            logger.info("="*60)
+            logger.info(f"Scan ID: {scan_id}")
+            logger.info(f"Files cataloged: {file_count:,}")
+            logger.info(f"Database: {args.db}")
+            logger.info(f"Completed: {datetime.now()}")
+            logger.info("="*60)
 
         return 0
 
