@@ -30,6 +30,11 @@ output/*.db
 output/*.db-*
 output/backups/
 
+# Generated output files
+output/*.json
+output/*.csv
+output/reports/*.md
+
 # Environment variables
 .env
 .env.local
@@ -60,6 +65,7 @@ coverage/
 # OS
 .DS_Store
 Thumbs.db
+nul
 
 # Temporary files
 tmp/
