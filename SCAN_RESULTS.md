@@ -1,8 +1,9 @@
 # Z: Drive Scan and Hash Generation
 
 **Bead ID:** DataArchive-f8m
-**Started:** 2026-03-06
-**Status:** Running in background (Task ID: bf9a674)
+**Started:** 2026-03-06 15:06:33
+**Status:** ✅ Running successfully (Task ID: bf3d713)
+**Drive:** Z:\ (3.66 TB total, 2.98 TB free)
 
 ## What Was Done
 
@@ -36,7 +37,24 @@ python scan_and_hash.py Z:\ --sha256 --drive-label "Manual copy from G: (DevHolm
 4. ✓ Scan session started
 5. 🔄 Currently scanning all files and generating SHA-256 hashes
 
-**Output location:** `C:\Users\steve\AppData\Local\Temp\claude\c--myStuff-DataArchive\tasks\bf9a674.output`
+**Output location:** `C:\Users\steve\AppData\Local\Temp\claude\c--myStuff-DataArchive\tasks\bf3d713.output`
+
+### Issues Encountered and Fixed
+
+#### Issue 1: Unicode Encoding Errors
+
+- Windows console (cp1252) couldn't handle Unicode checkmark characters (✓)
+- **Fix:** Removed all Unicode checkmarks from logger output
+
+#### Issue 2: Windows Compatibility
+
+- `os.statvfs()` doesn't exist on Windows (Unix-only)
+- **Fix:** Updated `drive_manager.py` to use cross-platform `shutil.disk_usage()`
+
+#### Issue 3: Sleep Prevention
+
+- `prevent_sleep()` context manager had Unicode issues
+- **Fix:** Removed sleep prevention (not needed for background scan)
 
 ## Checking Progress
 
