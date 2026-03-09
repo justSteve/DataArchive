@@ -370,8 +370,8 @@ class Database:
             conn.executemany("""
                 INSERT INTO files (
                     scan_id, path, size_bytes, modified_date, created_date,
-                    accessed_date, extension, is_hidden, is_system
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    accessed_date, extension, is_hidden, is_system, priority
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, [
                 (
                     scan_id,
@@ -382,7 +382,8 @@ class Database:
                     f.get('accessed_date'),
                     f['extension'],
                     f.get('is_hidden', False),
-                    f.get('is_system', False)
+                    f.get('is_system', False),
+                    f.get('priority', 'medium')
                 ) for f in files
             ])
             logger.debug(f"Inserted {len(files)} files for scan: {scan_id}")

@@ -1,0 +1,107 @@
+{
+  "drive_code": "EXLP",
+  "scan_date": "2026-03-09",
+  "scan_id": 7,
+  "mount_point": "/mnt/d",
+  "scan_duration_seconds": 95,
+
+  "summary": {
+    "total_files": 2500,
+    "total_folders": 495,
+    "total_size_bytes": 4335021369,
+    "total_size_gb": 4.0,
+    "directories_skipped": 566,
+    "files_hashed": 2036,
+    "errors": 0
+  },
+
+  "priority_distribution": {
+    "high": {
+      "count": 83,
+      "percentage": 3.3,
+      "size_mb": 69.7,
+      "description": "Critical archival files: databases, documents, email archives"
+    },
+    "medium": {
+      "count": 1454,
+      "percentage": 58.2,
+      "size_mb": 3662.4,
+      "description": "Potentially important: configs, scripts, web content"
+    },
+    "low": {
+      "count": 963,
+      "percentage": 38.5,
+      "size_mb": 402.1,
+      "description": "Recoverable: framework code, executables, DLLs"
+    }
+  },
+
+  "high_priority_files": [
+    {
+      "path": "SqlServer2014ExpressInstall/x64/Setup/sql_engine_core_inst_msi/PFiles/SqlServr/MSSQL.X/MSSQL/Binn/32VEAIQ8.MDF",
+      "type": "SQL Database",
+      "size_mb": 40.0,
+      "extension": ".mdf"
+    },
+    {
+      "path": "SqlServer2014ExpressInstall/x64/Setup/sql_engine_core_inst_msi/PFiles/SqlServr/MSSQL.X/MSSQL/Binn/Template/MSDBDATA.MDF",
+      "type": "SQL Database",
+      "size_mb": 12.81,
+      "extension": ".mdf"
+    },
+    {
+      "path": "inetpub/*.config files",
+      "type": "IIS Web Configuration",
+      "count": 6,
+      "extension": ".config"
+    },
+    {
+      "path": "ProgramData/Microsoft/RAC/StateData/rac.db",
+      "type": "Database",
+      "size_mb": 1.0,
+      "extension": ".db"
+    }
+  ],
+
+  "key_findings": [
+    "83 high-priority archival files identified (3.3% hit rate)",
+    "17 SQL files (.sql) - database scripts and schemas",
+    "6 IIS configuration files - web server settings",
+    "SQL Server 2014 Express installation files present",
+    "inetpub directory contains web content",
+    "ProgramData contains application databases and configs"
+  ],
+
+  "duplicate_analysis": {
+    "duplicate_groups": 364,
+    "total_wasted_bytes": 182129587,
+    "wasted_gb": 0.17,
+    "note": "Many duplicates in SQL Server install files (expected)"
+  },
+
+  "filtering_effectiveness": {
+    "approach": "Hybrid priority-based with smart subdirectory filtering",
+    "skipped_directories": [
+      "Windows/",
+      "Program Files/",
+      "Program Files (x86)/",
+      "cache/ subdirectories",
+      "temp/ subdirectories",
+      "logs/ subdirectories"
+    ],
+    "preserved_directories": [
+      "inetpub/",
+      "ProgramData/",
+      "SqlServer2014ExpressInstall/"
+    ],
+    "performance": "95 seconds for full scan with inline hashing"
+  },
+
+  "recommendations": [
+    "Review 83 high-priority files for backup/archival",
+    "SQL .mdf and .ldf files should be prioritized for backup",
+    "inetpub configs contain web server customizations",
+    "364 duplicate groups identified - review for space recovery",
+    "Consider archiving SQL Server installation separately"
+  ]
+}
