@@ -16,10 +16,9 @@ logger = get_logger(__name__)
 class FileScanner:
     """Scan file systems and catalog files"""
 
-    # Windows system directories to skip on boot drives
+    # Windows system directories to skip on boot drives (reduced list)
     WINDOWS_BOOT_DIRS = [
-        'Windows', 'Program Files', 'Program Files (x86)', 'ProgramData',
-        'inetpub', 'RecoveryImage', 'SqlServer2014ExpressInstall'
+        'Windows', 'Program Files', 'Program Files (x86)'
     ]
 
     # Always skip these directories (on any drive)
@@ -35,12 +34,15 @@ class FileScanner:
         'bootmgr', 'BOOTNXT', 'BOOTSECT.BAK', '$UPG$PBR.MARKER'
     ]
 
-    def __init__(self, drive_path: str, is_windows_boot: bool = False):
+    def __init__(self, drive_path: str, is_windows_boot: bool = False,
+                 enable_priority_filtering: bool = True):
         self.drive_path = Path(drive_path)
         self.is_windows_boot = is_windows_boot
+        self.enable_priority_filtering = enable_priority_filtering
         self.skipped_count = 0
         self.error_count = 0
-        logger.info(f"FileScanner initialized for: {drive_path} (Windows boot: {is_windows_boot})")
+        self.priority_stats = {'high': 0, 'medium': 0, 'low': 0, 'skip': 0}
+        logger.info(f"FileScanner initialized for: {drive_path} (Windows boot: {is_windows_boot}, priority filtering: {enable_priority_filtering})")
     
     def count_files(self) -> int:
         """Count total files (for progress bar)"""
@@ -74,9 +76,11 @@ class FileScanner:
         """
         logger.info(f"Starting file scan of {self.drive_path} (hashing: {enable_hashing})")
 
-        # Import hash utility if needed
+        # Import utilities if needed
         if enable_hashing:
             from utils.hash_utils import compute_quick_hash
+        if self.enable_priority_filtering:
+            from utils.file_priority import classify_file_priority
 
         # Count files for progress bar
         pbar = None
@@ -88,8 +92,15 @@ class FileScanner:
 
         try:
             for root, dirs, files in os.walk(self.drive_path):
-                # Filter out directories to skip
-                dirs[:] = [d for d in dirs if not self._should_skip_directory(d)]
+                # Get relative path for subdirectory filtering
+                root_path = Path(root)
+                try:
+                    rel_root = root_path.relative_to(self.drive_path)
+                except ValueError:
+                    rel_root = root_path
+
+                # Filter out directories to skip (context-aware)
+                dirs[:] = [d for d in dirs if not self._should_skip_directory(d, str(rel_root))]
 
                 for filename in files:
                     # Skip system files
@@ -103,6 +114,19 @@ class FileScanner:
                     try:
                         file_info = self._get_file_info(filepath)
                         if file_info:
+                            # Classify file priority
+                            if self.enable_priority_filtering:
+                                priority = classify_file_priority(file_info['path'], file_info['size_bytes'])
+                                file_info['priority'] = priority
+                                self.priority_stats[priority] += 1
+
+                                # Skip files marked for skipping
+                                if priority == 'skip':
+                                    self.skipped_count += 1
+                                    if pbar:
+                                        pbar.update(1)
+                                    continue
+
                             # Inline hash computation
                             if enable_hashing and file_info['size_bytes'] >= min_hash_size:
                                 quick_hash, error = compute_quick_hash(filepath)
@@ -133,10 +157,16 @@ class FileScanner:
             if pbar:
                 pbar.close()
 
-        logger.info(
-            f"Scan complete: {file_count:,} files processed, "
-            f"{self.error_count} errors, {self.skipped_count} skipped"
-        )
+        # Build summary message
+        summary = f"Scan complete: {file_count:,} files processed, " \
+                  f"{self.error_count} errors, {self.skipped_count} skipped"
+
+        if self.enable_priority_filtering:
+            summary += f" | Priority: high={self.priority_stats['high']:,}, " \
+                      f"medium={self.priority_stats['medium']:,}, " \
+                      f"low={self.priority_stats['low']:,}"
+
+        logger.info(summary)
     
     def _get_file_info(self, filepath: str) -> Dict[str, Any]:
         """Get metadata for a single file"""
@@ -170,8 +200,14 @@ class FileScanner:
             logger.warning(f"Unexpected error for {filepath}: {e}")
             return None
     
-    def _should_skip_directory(self, dirname: str) -> bool:
-        """Check if directory should be skipped (hybrid filtering)"""
+    def _should_skip_directory(self, dirname: str, parent_path: str = '') -> bool:
+        """
+        Check if directory should be skipped (context-aware filtering)
+
+        Args:
+            dirname: Directory name
+            parent_path: Parent path (relative to drive root) for context
+        """
         # Always skip these directories
         for pattern in self.ALWAYS_SKIP_DIRS:
             if pattern.lower() == dirname.lower():
@@ -179,13 +215,35 @@ class FileScanner:
                 self.skipped_count += 1
                 return True
 
-        # Skip Windows system directories on boot drives
-        if self.is_windows_boot:
+        # Skip Windows system directories on boot drives (top-level only)
+        if self.is_windows_boot and parent_path in ('', '.'):
             for pattern in self.WINDOWS_BOOT_DIRS:
                 if pattern.lower() == dirname.lower():
                     logger.info(f"Skipping Windows boot directory: {dirname}")
                     self.skipped_count += 1
                     return True
+
+        # Smart subdirectory filtering (cache, temp, logs, node_modules)
+        if self.enable_priority_filtering:
+            skip_subdirs = [
+                'cache', 'Cache', 'CACHE',
+                'temp', 'Temp', 'tmp',
+                'logs', 'Logs',
+                'node_modules',
+                '__pycache__',
+                '.git', '.svn',
+                'venv', '.venv',
+            ]
+            if dirname in skip_subdirs:
+                logger.debug(f"Skipping subdirectory: {parent_path}/{dirname}")
+                self.skipped_count += 1
+                return True
+
+            # Skip browser cache directories
+            if 'Cache' in dirname and ('Chrome' in parent_path or 'Firefox' in parent_path):
+                logger.debug(f"Skipping browser cache: {parent_path}/{dirname}")
+                self.skipped_count += 1
+                return True
 
         return False
 

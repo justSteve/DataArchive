@@ -357,7 +357,7 @@ class MetadataCapture:
         if is_windows_boot:
             logger.info("Windows boot drive detected - enabling hybrid filtering")
 
-        scanner = FileScanner(drive_path, is_windows_boot=is_windows_boot)
+        scanner = FileScanner(drive_path, is_windows_boot=is_windows_boot, enable_priority_filtering=True)
         files_batch = []
         folder_count = 0
         oldest_date = None
@@ -411,6 +411,9 @@ class MetadataCapture:
                     # Store inline hash if present
                     if 'quick_hash' in file_record:
                         file_record['_quick_hash'] = file_record.pop('quick_hash')
+
+                    # Priority is already in file_info from scanner
+                    # No need to extract it
 
                     files_batch.append(file_record)
 
