@@ -260,12 +260,13 @@ class DriveManager:
         """Get detailed information about a specific drive"""
         if not self.is_drive_accessible(path):
             return None
-        
+
         try:
-            stat = os.statvfs(path)
-            total = stat.f_blocks * stat.f_frsize
-            free = stat.f_bavail * stat.f_frsize
-            used = total - free
+            # Use shutil.disk_usage which works on both Windows and Unix
+            usage = shutil.disk_usage(path)
+            total = usage.total
+            free = usage.free
+            used = usage.used
             
             # Get physical drive identity
             identity = self.get_physical_drive_identity(path)
