@@ -18,5 +18,6 @@
       "source.organizeImports": "explicit"
     }
   },
-  "python.analysis.typeCheckingMode": "basic"
+  "python.analysis.typeCheckingMode": "basic",
+  "python.defaultInterpreterPath": "/root/projects/DataArchive/.venv/bin/python3"
 }
