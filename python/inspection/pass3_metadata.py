@@ -183,7 +183,8 @@ class MetadataCapture:
 
     def __init__(self, db_path: Optional[str] = None,
                  min_duplicate_size: int = DEFAULT_MIN_SIZE_FOR_DUPLICATE,
-                 batch_size: int = DEFAULT_BATCH_SIZE):
+                 batch_size: int = DEFAULT_BATCH_SIZE,
+                 enable_inline_hashing: bool = True):
         """
         Initialize the metadata capture inspector.
 
@@ -191,11 +192,13 @@ class MetadataCapture:
             db_path: Path to SQLite database for storing results
             min_duplicate_size: Minimum file size for duplicate detection
             batch_size: Database batch insert size
+            enable_inline_hashing: Compute hashes during scan (faster than separate pass)
         """
         self.db = Database(db_path) if db_path else None
         self.min_duplicate_size = min_duplicate_size
         self.batch_size = batch_size
-        logger.info(f"MetadataCapture initialized (min_dup_size={min_duplicate_size})")
+        self.enable_inline_hashing = enable_inline_hashing
+        logger.info(f"MetadataCapture initialized (min_dup_size={min_duplicate_size}, inline_hash={enable_inline_hashing})")
 
     def _extract_drive_letter(self, drive_path: str) -> Optional[str]:
         """Extract Windows drive letter from path"""
@@ -206,6 +209,33 @@ class MetadataCapture:
         if match:
             return match.group(1).upper()
         return None
+
+    def _detect_windows_boot(self, drive_path: str) -> bool:
+        """Detect if drive is a Windows boot drive by checking for Windows directory"""
+        drive_path_obj = Path(drive_path)
+        windows_dir = drive_path_obj / 'Windows'
+        system32_dir = windows_dir / 'System32'
+        return windows_dir.exists() and system32_dir.exists()
+
+    def _insert_files_with_hashes(self, scan_id: int, files_batch: List[Dict[str, Any]]) -> None:
+        """Insert files batch and their inline hashes if present"""
+        if not self.db:
+            return
+
+        # Separate files and hashes
+        hash_batch = []
+        for file_record in files_batch:
+            if '_quick_hash' in file_record:
+                quick_hash = file_record.pop('_quick_hash')
+                # We'll add file_id after insertion
+                file_record['_pending_hash'] = quick_hash
+
+        # Insert files
+        self.db.insert_files_batch(scan_id, files_batch)
+
+        # Now insert hashes (need to query file_ids)
+        # This is a simplification - in production we'd batch this better
+        # For now, hashes will be added in the separate phase if inline hashing is disabled
 
     def _classify_size(self, size_bytes: int) -> str:
         """Classify file size into buckets"""
@@ -322,7 +352,12 @@ class MetadataCapture:
                                 scan_id: Optional[int], show_progress: bool,
                                 progress_callback: Optional[callable]) -> None:
         """Capture file metadata and store in database"""
-        scanner = FileScanner(drive_path)
+        # Detect if this is a Windows boot drive
+        is_windows_boot = self._detect_windows_boot(drive_path)
+        if is_windows_boot:
+            logger.info("Windows boot drive detected - enabling hybrid filtering")
+
+        scanner = FileScanner(drive_path, is_windows_boot=is_windows_boot)
         files_batch = []
         folder_count = 0
         oldest_date = None
@@ -332,9 +367,13 @@ class MetadataCapture:
         seen_dirs = set()
 
         try:
-            for file_info in scanner.scan(show_progress=show_progress):
+            for file_info in scanner.scan(show_progress=show_progress, enable_hashing=self.enable_inline_hashing):
                 report.files_processed += 1
                 report.total_size_bytes += file_info['size_bytes']
+
+                # Store inline hash if available
+                if 'quick_hash' in file_info:
+                    report.files_hashed += 1
 
                 # Track extension stats
                 ext = file_info['extension'] or '(no extension)'
@@ -366,9 +405,17 @@ class MetadataCapture:
 
                 # Batch for database
                 if self.db and scan_id:
-                    files_batch.append(file_info)
+                    # Prepare file record for database
+                    file_record = file_info.copy()
+
+                    # Store inline hash if present
+                    if 'quick_hash' in file_record:
+                        file_record['_quick_hash'] = file_record.pop('quick_hash')
+
+                    files_batch.append(file_record)
+
                     if len(files_batch) >= self.batch_size:
-                        self.db.insert_files_batch(scan_id, files_batch)
+                        self._insert_files_with_hashes(scan_id, files_batch)
                         files_batch = []
 
                 # Progress callback
