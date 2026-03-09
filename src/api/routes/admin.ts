@@ -29,7 +29,7 @@ router.post('/reset-database', async (req: Request, res: Response) => {
 
     console.log('[Admin] Resetting database...');
 
-    const scriptPath = path.join(__dirname, '../../../quick-reset-db.sh');
+    const scriptPath = path.join(__dirname, '../../../scripts/shell/quick-reset-db.sh');
 
     // Check if script exists
     if (!fs.existsSync(scriptPath)) {

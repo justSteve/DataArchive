@@ -96,10 +96,13 @@ data-archive/
 │   └── archive.db           # SQLite database
 │
 ├── dist/                    # Compiled TypeScript
+├── scripts/
+│   ├── python/             # Python utility scripts
+│   ├── shell/              # Shell scripts
+│   └── windows/            # Windows setup scripts
 ├── package.json            # TypeScript dependencies
 ├── tsconfig.json           # TypeScript configuration
-├── vite.config.ts          # Frontend bundling
-└── start-dev.sh            # Development startup script
+└── vite.config.ts          # Frontend bundling
 ```
 
 ## Getting Started
@@ -156,7 +159,7 @@ Compiles TypeScript to JavaScript in the `dist/` directory.
 #### Option 1: Development Script (Recommended)
 
 ```bash
-./start-dev.sh
+./scripts/shell/start-dev.sh
 ```
 
 Starts both API server and frontend dev server concurrently.
@@ -395,7 +398,7 @@ npm run api
 npm run dev
 
 # Start both servers concurrently
-./start-dev.sh
+./scripts/shell/start-dev.sh
 ```
 
 ### Python Scripts
@@ -442,13 +445,13 @@ To reset the database to a blank slate (with automatic backup):
 
 **Option 2: Command Line (Interactive)**
 ```bash
-./reset-database.sh
+./scripts/shell/reset-database.sh
 ```
 Shows database stats and asks for confirmation before resetting.
 
 **Option 3: Quick Reset (No confirmation)**
 ```bash
-./quick-reset-db.sh
+./scripts/shell/quick-reset-db.sh
 ```
 Immediately resets database with automatic backup.
 
@@ -483,7 +486,7 @@ python3 -c "from core.database import Database; Database('output/archive.db')"
 
 Or use the reset script:
 ```bash
-./quick-reset-db.sh
+./scripts/shell/quick-reset-db.sh
 ```
 
 ### Port Already in Use

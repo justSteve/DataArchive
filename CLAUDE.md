@@ -79,7 +79,7 @@ DataArchive v2 is a **Claude-assisted interactive drive inspection system** usin
 
 ```bash
 # Start both API and frontend
-./start-dev.sh
+./scripts/shell/start-dev.sh
 
 # Or manually:
 bun run api          # API server on port 3001
