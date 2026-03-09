@@ -1,0 +1,70 @@
+{
+  "drive_code": "WIQJ",
+  "scan_date": "2026-03-09",
+  "scan_id": 9,
+  "mount_point": "/mnt/h",
+  "scan_duration_seconds": 1,
+
+  "summary": {
+    "total_files": 0,
+    "total_folders": 0,
+    "total_size_bytes": 0,
+    "total_size_gb": 0.0,
+    "directories_skipped": 0,
+    "files_hashed": 0,
+    "errors": 0
+  },
+
+  "priority_distribution": {
+    "high": {
+      "count": 0,
+      "percentage": 0,
+      "size_mb": 0.0,
+      "description": "Critical archival files: databases, documents, email archives"
+    },
+    "medium": {
+      "count": 0,
+      "percentage": 0,
+      "size_mb": 0.0,
+      "description": "Potentially important: configs, scripts, web content"
+    },
+    "low": {
+      "count": 0,
+      "percentage": 0,
+      "size_mb": 0.0,
+      "description": "Recoverable: framework code, executables, DLLs"
+    }
+  },
+
+  "key_findings": [
+    "Drive is empty or recently formatted",
+    "No Windows installation detected",
+    "Drive is accessible but contains no files"
+  ],
+
+  "duplicate_analysis": {
+    "duplicate_groups": 0,
+    "total_wasted_bytes": 0,
+    "wasted_mb": 0.0,
+    "note": "No files to analyze"
+  },
+
+  "filtering_effectiveness": {
+    "approach": "Priority-based filtering (no Windows boot filtering applied)",
+    "skipped_directories": [],
+    "preserved_directories": [],
+    "performance": "< 1 second"
+  },
+
+  "recommendations": [
+    "Drive is empty - ready for use",
+    "238 GB capacity available",
+    "Consider using for backups or archival storage"
+  ],
+
+  "notes": [
+    "Drive connected via USB dock (Sabrent Dual SATA Bridge)",
+    "238 GB NTFS formatted drive",
+    "No data found - drive may have been wiped or formatted recently"
+  ]
+}

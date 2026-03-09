@@ -1,0 +1,84 @@
+{
+  "drive_code": "ASUS",
+  "scan_date": "2026-03-09",
+  "scan_id": 8,
+  "mount_point": "/mnt/e",
+  "scan_duration_seconds": 75,
+
+  "summary": {
+    "total_files": 1523,
+    "total_folders": 371,
+    "total_size_bytes": 938991069,
+    "total_size_gb": 0.87,
+    "directories_skipped": 609,
+    "files_hashed": 1098,
+    "errors": 0
+  },
+
+  "priority_distribution": {
+    "high": {
+      "count": 236,
+      "percentage": 15.5,
+      "size_mb": 11.8,
+      "description": "Critical archival files: databases, documents, email archives"
+    },
+    "medium": {
+      "count": 929,
+      "percentage": 61.0,
+      "size_mb": 588.6,
+      "description": "Potentially important: configs, scripts, web content"
+    },
+    "low": {
+      "count": 358,
+      "percentage": 23.5,
+      "size_mb": 295.2,
+      "description": "Recoverable: framework code, executables, DLLs"
+    }
+  },
+
+  "key_findings": [
+    "236 high-priority archival files identified (15.5% hit rate)",
+    "Significantly higher archival value than drive D (EXLP)",
+    "Windows boot drive with user data preserved",
+    "inetpub directory present with web content",
+    "Multiple temporary installation directories from Windows updates"
+  ],
+
+  "duplicate_analysis": {
+    "duplicate_groups": 56,
+    "total_wasted_bytes": 25264523,
+    "wasted_mb": 24.1,
+    "note": "Duplicates likely from Windows update staging"
+  },
+
+  "filtering_effectiveness": {
+    "approach": "Hybrid priority-based with smart subdirectory filtering",
+    "skipped_directories": [
+      "Windows/",
+      "Program Files/",
+      "Program Files (x86)/",
+      "cache/ subdirectories",
+      "temp/ subdirectories"
+    ],
+    "preserved_directories": [
+      "inetpub/",
+      "ProgramData/",
+      "Temporary Windows installation folders"
+    ],
+    "performance": "75 seconds for full scan with inline hashing"
+  },
+
+  "recommendations": [
+    "Review 236 high-priority files for backup/archival",
+    "Higher archival value than EXLP drive (15.5% vs 3.3%)",
+    "56 duplicate groups - review temporary Windows folders",
+    "Clean up temporary installation directories",
+    "Drive appears to be mostly user data (good archival candidate)"
+  ],
+
+  "notes": [
+    "Drive connected via USB dock (Sabrent Dual SATA Bridge)",
+    "Windows boot drive detected and filtered",
+    "Scan completed successfully with 0 errors"
+  ]
+}

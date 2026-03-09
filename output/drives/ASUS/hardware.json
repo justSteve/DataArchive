@@ -1,0 +1,11 @@
+{
+  "mount_point": "/mnt/e",
+  "collected_at": "2026-03-09T10:12:06.322002",
+  "serial_number": "00000000000000000000",
+  "model": "Dual SATA Bridge",
+  "manufacturer": "Sabrent ",
+  "size_bytes": 128035676160,
+  "filesystem": "NTFS",
+  "connection_type": "USB",
+  "media_type": null
+}
