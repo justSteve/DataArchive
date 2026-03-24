@@ -67,19 +67,5 @@
       "Glob(*)",
       "Grep(*)"
     ]
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/root/projects/gtOps/ECC/hooks/perm-audit-hook.sh",
-            "timeout": 5000
-          }
-        ]
-      }
-    ]
   }
 }
