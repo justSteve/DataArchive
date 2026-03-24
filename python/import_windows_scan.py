@@ -88,7 +88,7 @@ def main():
         print(f"  Created drive_id {drive_id}")
 
     # Start scan session
-    scan_id = conn.execute('''INSERT INTO scans (drive_id, scan_path, status, started_at)
+    scan_id = conn.execute('''INSERT INTO scans (drive_id, mount_point, status, scan_start)
         VALUES (?, ?, 'IN_PROGRESS', ?)''',
         (drive_id, f'{dl}:\\', datetime.now().isoformat())).lastrowid
     print(f"  Scan session {scan_id}")
@@ -139,7 +139,7 @@ def main():
 
     # Complete scan
     conn.execute('''UPDATE scans SET status = 'COMPLETE', file_count = ?,
-        total_size_bytes = ?, completed_at = ? WHERE scan_id = ?''',
+        total_size_bytes = ?, scan_end = ? WHERE scan_id = ?''',
         (file_count, total_size, datetime.now().isoformat(), scan_id))
     conn.execute('''UPDATE drives SET last_scanned = ? WHERE drive_id = ?''',
         (datetime.now().isoformat(), drive_id))
