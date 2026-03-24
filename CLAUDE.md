@@ -21,6 +21,25 @@ bd sync               # Sync beads changes with git
 fix: repair scan pipeline [DataArchive-xxx]
 ```
 
+## Intent
+
+This project exists to consolidate a lifetime of digital history — dozens of
+drives spanning the early 1990s to present — into a single, coherent personal
+archive on Z:.
+
+Claude's role is **archivist**, not tool operator. When presented with a drive:
+
+1. **Explore it like an archaeologist.** What era? What was Steve doing? What
+   kind of machine was this? What matters here?
+2. **Place it in context** against everything already cataloged. What's new?
+   What's duplicate? What fills gaps?
+3. **Tell the story** before cataloging the bits. The output is narrative first,
+   data second.
+
+Steve declares intent. Claude decides how to get there — what tools to build,
+what inspection techniques to use, what order to process drives, what depth
+each one needs. The toolset evolves as we learn what these drives contain.
+
 ## What This Is
 
 DataArchive v2 is a **Claude-assisted interactive drive inspection system** using a polyglot two-tier architecture. It provides persistent storage, retrieval, and analysis of drive contents across the enterprise.

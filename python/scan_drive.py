@@ -196,7 +196,7 @@ def main():
             # Stage 2: OS Detection
             logger.info("\n--- STAGE 2: OS Detection ---")
             os_detector = OSDetector(str(drive_path))
-            os_info = os_detector.detect()
+            os_info = os_detector.detect().to_dict()
             
             logger.info(f"OS Type: {os_info['os_type']}")
             logger.info(f"OS Name: {os_info['os_name']}")

@@ -1,0 +1,76 @@
+{
+  "drive_code": "HFJR",
+  "scan_date": "2026-03-09",
+  "scan_id": 11,
+  "mount_point": "/mnt/d",
+  "scan_duration_seconds": 3,
+
+  "summary": {
+    "total_files": 100,
+    "total_folders": 42,
+    "total_size_bytes": 94166819,
+    "total_size_gb": 0.09,
+    "directories_skipped": 0,
+    "files_hashed": 93,
+    "errors": 0
+  },
+
+  "priority_distribution": {
+    "high": {
+      "count": 0,
+      "percentage": 0.0,
+      "size_mb": 0.0,
+      "description": "Critical archival files: databases, documents, email archives"
+    },
+    "medium": {
+      "count": 98,
+      "percentage": 98.0,
+      "size_mb": 88.7,
+      "description": "Potentially important: configs, scripts, web content"
+    },
+    "low": {
+      "count": 2,
+      "percentage": 2.0,
+      "size_mb": 1.2,
+      "description": "Recoverable: framework code, executables, DLLs"
+    }
+  },
+
+  "key_findings": [
+    "No high-priority archival files identified",
+    "Small boot partition with log files",
+    "Contains BankWebinars log processing data",
+    "Primarily .mui (language resource) and .ttf (font) files",
+    "Log files span 2013-2018 timeframe"
+  ],
+
+  "duplicate_analysis": {
+    "duplicate_groups": 0,
+    "total_wasted_bytes": 0,
+    "wasted_mb": 0.0,
+    "note": "No duplicates found"
+  },
+
+  "filtering_effectiveness": {
+    "approach": "Priority-based filtering (no Windows boot filtering applied)",
+    "skipped_directories": [],
+    "preserved_directories": [
+      "home/",
+      "Boot/"
+    ],
+    "performance": "< 5 seconds"
+  },
+
+  "recommendations": [
+    "Low archival priority - mostly system fonts and old log files",
+    "Consider archiving BankWebinars log data if still relevant",
+    "No duplicates to clean up",
+    "Small footprint (90MB) - minimal storage impact"
+  ],
+
+  "notes": [
+    "Drive connected via USB dock (Sabrent Dual SATA Bridge)",
+    "350MB partition (100% full)",
+    "Scan completed successfully with 0 errors"
+  ]
+}

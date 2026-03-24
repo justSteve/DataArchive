@@ -145,9 +145,11 @@ class DriveValidator:
             drive_data = json.loads(result.stdout)
             
             if 'Error' in drive_data:
-                results['errors'].append(
-                    f"Drive {drive_letter}: not found in Windows. "
-                    f"The path exists in WSL but Windows doesn't recognize it."
+                # Network/mapped drives won't show up in Get-Partition
+                # Treat as warning, not error — the drive is accessible via WSL
+                results['warnings'].append(
+                    f"Drive {drive_letter}: not found as local disk in Windows "
+                    f"(may be a network/mapped drive). Proceeding with scan."
                 )
                 return results
             
