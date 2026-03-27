@@ -16,7 +16,9 @@ $logFile = "$outDir\scan-${DriveLetter}.log"
 
 if (-not (Test-Path $outDir)) { New-Item -ItemType Directory $outDir | Out-Null }
 
-"Scan started: $(Get-Date)" | Out-File $logFile -Encoding ASCII
+$msg = "Scan started: $(Get-Date) on ${DrivePath}"
+$msg | Out-File $logFile -Encoding ASCII
+Write-Host $msg
 
 # ── Drive metadata ──
 $volume = Get-Volume -DriveLetter $DriveLetter -ErrorAction SilentlyContinue
@@ -71,6 +73,7 @@ if (Test-Path $softwareHive -ErrorAction SilentlyContinue) {
 $metaJson = $meta | ConvertTo-Json -Depth 5
 [System.IO.File]::WriteAllText($metaFile, $metaJson, [System.Text.UTF8Encoding]::new($false))
 "Metadata written" | Add-Content $logFile -Encoding ASCII
+Write-Host "Metadata written. Starting file scan..."
 
 # ── File scan ──
 # Write CSV: path, size_bytes, modified, created, accessed, extension, is_hidden, is_system
@@ -109,7 +112,9 @@ function Scan-Directory {
                 $script:totalSize += $info.Length
 
                 if ($script:count % 10000 -eq 0) {
-                    "$($script:count) files scanned..." | Add-Content $logFile -Encoding ASCII
+                    $progress = "$($script:count) files scanned, $([math]::Round($script:totalSize/1GB,2)) GB, $($script:errors) errors..."
+                    $progress | Add-Content $logFile -Encoding ASCII
+                    Write-Host $progress
                     $writer.Flush()
                 }
             }
@@ -125,5 +130,9 @@ Scan-Directory $DrivePath
 $writer.Flush()
 $writer.Close()
 
-"Scan complete: $count files, $([math]::Round($totalSize/1GB, 2)) GB, $errors errors" | Add-Content $logFile -Encoding ASCII
+$summary = "Scan complete: $count files, $([math]::Round($totalSize/1GB, 2)) GB, $errors errors"
+$summary | Add-Content $logFile -Encoding ASCII
+Write-Host $summary
+Write-Host "CSV: $csvFile"
+Write-Host "Finished: $(Get-Date)"
 "Finished: $(Get-Date)" | Add-Content $logFile -Encoding ASCII
