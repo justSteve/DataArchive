@@ -20,7 +20,7 @@ from core.progress_reporter import ProgressReporter
 logger = get_logger(__name__)
 
 
-def compute_hashes(scan_id, db_path='output/archive.db', batch_size=500, verify_sha256=False):
+def compute_hashes(scan_id, db_path='data/archive.db', batch_size=500, verify_sha256=False):
     """Compute hashes for all files in a scan"""
     logger.info(f"Starting hash computation for scan_id {scan_id}")
 
@@ -190,7 +190,7 @@ def compute_hashes(scan_id, db_path='output/archive.db', batch_size=500, verify_
     return processed, errors
 
 
-def detect_duplicates(scan_id, db_path='output/archive.db'):
+def detect_duplicates(scan_id, db_path='data/archive.db'):
     """Find duplicate files and populate duplicate_groups and duplicate_members"""
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
@@ -263,7 +263,7 @@ def detect_duplicates(scan_id, db_path='output/archive.db'):
     return groups_created
 
 
-def show_summary(scan_id, db_path='output/archive.db'):
+def show_summary(scan_id, db_path='data/archive.db'):
     """Show summary of duplicates"""
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
@@ -332,7 +332,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Compute hashes and detect duplicates')
     parser.add_argument('--scan-id', type=int, required=True, help='Scan ID to process')
-    parser.add_argument('--db', default='output/archive.db', help='Database path')
+    parser.add_argument('--db', default='data/archive.db', help='Database path')
     parser.add_argument('--batch-size', type=int, default=500, help='Batch size')
     parser.add_argument('--verify-sha256', action='store_true', help='Also compute SHA-256')
     parser.add_argument('--skip-hashing', action='store_true', help='Skip hashing (only detect duplicates)')

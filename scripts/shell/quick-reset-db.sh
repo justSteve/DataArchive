@@ -4,7 +4,7 @@
 
 set -e
 
-DB_PATH="output/archive.db"
+DB_PATH="data/archive.db"
 BACKUP_DIR="output/backups"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 

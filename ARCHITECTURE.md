@@ -83,7 +83,7 @@ DataArchive uses a **polyglot two-tier architecture** that combines TypeScript f
 import { createApiServer, startServer } from '@myorg/api-server';
 
 const app = createApiServer({
-  dbPath: './output/archive.db',
+  dbPath: './data/archive.db',
   enableLogging: true
 });
 
@@ -154,7 +154,7 @@ class PythonBridge {
 
 **Example call:**
 ```typescript
-const result = await bridge.scanDrive('/mnt/c', 'output/archive.db', {
+const result = await bridge.scanDrive('/mnt/c', 'data/archive.db', {
   noProgress: true
 });
 // Returns: { scan_id, file_count, total_size, status }
@@ -273,7 +273,7 @@ ScanDashboard re-fetches scan list
 
 ```python
 class Database:
-    def __init__(self, db_path: str = "output/archive.db")
+    def __init__(self, db_path: str = "data/archive.db")
     def _init_schema(self)  # Create tables and indexes
     def insert_drive(self, drive_info: Dict) -> int
     def start_scan(self, drive_id: int, mount_point: str) -> int
@@ -367,7 +367,7 @@ def scan_files(
 **Command Line Arguments:**
 ```bash
 python scan_drive.py /mnt/c \
-  --db output/archive.db \
+  --db data/archive.db \
   --no-progress \
   --json-output \
   --drive-model "Samsung 870 EVO" \
@@ -670,7 +670,7 @@ npm run build:frontend
 ```env
 NODE_ENV=production
 PORT=3001
-DB_PATH=./output/archive.db
+DB_PATH=./data/archive.db
 PYTHON_PATH=./python/venv/bin/python3
 ```
 

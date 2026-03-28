@@ -286,7 +286,7 @@ class HashPopulator:
 def main():
     parser = argparse.ArgumentParser(description='Populate file hashes for a scan')
     parser.add_argument('--scan-id', type=int, required=True, help='Scan ID to process')
-    parser.add_argument('--db', default='output/archive.db', help='Database path')
+    parser.add_argument('--db', default='data/archive.db', help='Database path')
     parser.add_argument('--verify-sha256', action='store_true', help='Also compute SHA-256 hashes')
     parser.add_argument('--batch-size', type=int, default=1000, help='Batch insert size')
 

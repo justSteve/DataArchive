@@ -63,7 +63,7 @@ curl http://localhost:3001/api/health
 **Fix**: Initialized database using Python Database class:
 ```bash
 source python/venv/bin/activate
-python3 -c "from core.database import Database; Database('output/archive.db')"
+python3 -c "from core.database import Database; Database('data/archive.db')"
 ```
 
 **Result**: All tables created successfully
@@ -250,7 +250,7 @@ SqliteError: no such table: scans
 **Fix**: Initialize database using Python Database class constructor
 ```python
 from core.database import Database
-db = Database('output/archive.db')
+db = Database('data/archive.db')
 ```
 
 **Result**: All tables and indexes created successfully
@@ -293,7 +293,7 @@ curl -X POST http://localhost:3001/api/drives/validate \
 
 # Initialize database
 source python/venv/bin/activate
-python3 -c "from core.database import Database; Database('output/archive.db')"
+python3 -c "from core.database import Database; Database('data/archive.db')"
 ```
 
 ## Application Access

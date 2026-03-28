@@ -42,7 +42,7 @@
     "file_count": 12345,
     "total_size": 1234567890,
     "status": "complete",
-    "db_path": "output/archive.db",
+    "db_path": "data/archive.db",
     "drive_path": "/mnt/e",
     "completed_at": "2025-10-20T09:45:00"
   }

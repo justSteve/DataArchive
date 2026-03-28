@@ -92,7 +92,7 @@ Determine how to access the partition programmatically:
 Once path is identified:
 - Use `scan_g_drive.py` to catalog all files
 - Record file sizes, paths, and metadata
-- Store results in `output/archive.db`
+- Store results in `data/archive.db`
 
 ### 3. Analyze Contents
 

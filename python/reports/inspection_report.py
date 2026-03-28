@@ -31,7 +31,7 @@ class InspectionReportGenerator:
     - Human readability
     """
 
-    def __init__(self, output_dir: str = "output/reports"):
+    def __init__(self, output_dir: str = "data/reports"):
         """
         Initialize the report generator.
 
@@ -456,7 +456,7 @@ class InspectionReportGenerator:
         return "\n".join(lines)
 
 
-def generate_inspection_report(review_report, output_dir: str = "output/reports") -> str:
+def generate_inspection_report(review_report, output_dir: str = "data/reports") -> str:
     """
     Convenience function to generate an inspection report.
 
@@ -476,7 +476,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Generate Inspection Report')
     parser.add_argument('json_file', help='Path to JSON file containing review report')
-    parser.add_argument('--output-dir', default='output/reports', help='Output directory')
+    parser.add_argument('--output-dir', default='data/reports', help='Output directory')
 
     args = parser.parse_args()
 

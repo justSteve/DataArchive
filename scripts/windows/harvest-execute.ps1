@@ -5,8 +5,8 @@
 #
 # Usage (elevated PowerShell):
 #   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-#   & C:\myStuff\DataArchive\Harvester\harvest-execute.ps1 -Manifest C:\myStuff\DataArchive\Harvester\manifests\harvest-WWYY.jsonl
-#   & C:\myStuff\DataArchive\Harvester\harvest-execute.ps1 -Manifest C:\myStuff\DataArchive\Harvester\manifests\harvest-WWYY.jsonl -DryRun
+#   & C:\Users\steve\OneDrive\Tools\DataArchiver\harvest-execute.ps1 -Manifest C:\myStuff\DataArchive\Harvester\manifests\harvest-WWYY.jsonl
+#   & C:\Users\steve\OneDrive\Tools\DataArchiver\harvest-execute.ps1 -Manifest C:\myStuff\DataArchive\Harvester\manifests\harvest-WWYY.jsonl -DryRun
 param(
     [Parameter(Mandatory=$true)][string]$Manifest,
     [switch]$DryRun

@@ -11,7 +11,7 @@ from pathlib import Path
 def export_duplicates_csv(output_file='output/duplicates_report.csv'):
     """Export all duplicate files to CSV with metadata."""
 
-    conn = sqlite3.connect('output/archive.db')
+    conn = sqlite3.connect('data/archive.db')
     cursor = conn.cursor()
 
     # Find all files that have duplicates (same hash, multiple files)

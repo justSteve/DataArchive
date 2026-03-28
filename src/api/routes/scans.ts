@@ -64,7 +64,7 @@ router.post('/start', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'drivePath is required' });
     }
 
-    const defaultDbPath = dbPath || './output/archive.db';
+    const defaultDbPath = dbPath || './data/archive.db';
 
     // Validate drive first
     console.log(`[API] Validating drive: ${drivePath}`);

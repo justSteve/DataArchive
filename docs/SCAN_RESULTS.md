@@ -96,7 +96,7 @@ Once the scan completes:
 
 2. **View scan results:**
    ```bash
-   sqlite3 output/archive.db
+   sqlite3 data/archive.db
    SELECT * FROM scans ORDER BY scan_id DESC LIMIT 1;
    SELECT COUNT(*) FROM files WHERE scan_id = <scan_id>;
    ```
@@ -115,12 +115,12 @@ Once the scan completes:
 - **Performance:** SHA-256 is slower but provides cryptographic-strength verification
 - **Quick Hash:** Also generated for fast preliminary duplicate detection
 - **Error Handling:** Files that can't be hashed (permissions, locks) are logged but don't stop the scan
-- **Database:** All data stored in `output/archive.db`
+- **Database:** All data stored in `data/archive.db`
 
 ## Files Created
 
 - `python/scan_and_hash.py` - New scanner with hash generation
-- `output/archive.db` - Updated with hash columns and Z: drive data (in progress)
+- `data/archive.db` - Updated with hash columns and Z: drive data (in progress)
 - This file (`SCAN_RESULTS.md`) - Documentation of the work
 
 ---

@@ -37,7 +37,7 @@ export interface CheckpointData {
 export class CheckpointManager {
   private db: Database;
 
-  constructor(dbPath: string = './output/archive.db') {
+  constructor(dbPath: string = './data/archive.db') {
     const fullPath = path.resolve(dbPath);
     this.db = new Database(fullPath);
   }

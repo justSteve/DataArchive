@@ -39,7 +39,7 @@ export class MetricsCollector {
   private flushTimer?: Timer;
 
   constructor(
-    dbPath: string = './output/archive.db',
+    dbPath: string = './data/archive.db',
     bufferSize: number = 100,
     flushIntervalMs: number = 10000
   ) {

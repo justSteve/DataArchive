@@ -17,7 +17,7 @@ logger = get_logger(__name__)
 class Database:
     """SQLite database interface"""
     
-    def __init__(self, db_path: str = "output/archive.db"):
+    def __init__(self, db_path: str = "data/archive.db"):
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(exist_ok=True)
         self._init_schema()

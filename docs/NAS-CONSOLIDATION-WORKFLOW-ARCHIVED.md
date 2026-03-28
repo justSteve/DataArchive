@@ -86,7 +86,7 @@ bd close <id> --reason="W: inspection complete - 189,450 files, 800GB, cross-dri
 
 ### 3. Review Claude's Analysis
 
-**Reports Location:** `output/reports/`
+**Reports Location:** `data/reports/`
 
 **Two reports generated:**
 - `session_1_<date>.md` - Z: drive analysis
@@ -294,7 +294,7 @@ Before executing any deletions:
 
 - [ ] Both drives inspected successfully
 - [ ] Pass 3 completed for both drives
-- [ ] Reports reviewed in `output/reports/`
+- [ ] Reports reviewed in `data/reports/`
 - [ ] SQL queries validated with `LIMIT 10` first
 - [ ] Export CSV reviewed manually
 - [ ] Dry-run script tested with `-WhatIf`

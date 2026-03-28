@@ -20,7 +20,7 @@ logStream;
 
 // Create server with shared infrastructure
 const app = createApiServer({
-  dbPath: './output/archive.db',
+  dbPath: './data/archive.db',
   enableLogging: true
 });
 

@@ -26,7 +26,7 @@ Your DataArchive project has been initialized as a Git repository with an initia
 - node_modules/
 - dist/ and dist-frontend/ (build outputs)
 - python/venv/ (Python virtual environment)
-- output/archive.db (database file)
+- data/archive.db (database file)
 - Environment variables (.env)
 - IDE settings
 

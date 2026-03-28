@@ -30,7 +30,7 @@ class DuplicateRemover:
 
     def __init__(
         self,
-        db_path: str = 'output/archive.db',
+        db_path: str = 'data/archive.db',
         dry_run: bool = True,
         exclude_patterns: List[str] = None,
         batch_size: int = 100,

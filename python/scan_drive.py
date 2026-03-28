@@ -35,8 +35,8 @@ def main():
     )
     parser.add_argument(
         '--db',
-        default='output/archive.db',
-        help='Path to database file (default: output/archive.db)'
+        default='data/archive.db',
+        help='Path to database file (default: data/archive.db)'
     )
     parser.add_argument(
         '--no-progress',
@@ -274,7 +274,7 @@ def main():
                 logger.info("="*60)
 
                 logger.info("\nNext steps:")
-                logger.info("  1. View results: sqlite3 output/archive.db")
+                logger.info("  1. View results: sqlite3 data/archive.db")
                 logger.info("  2. Launch archive UI: python archive_ui.py")
 
         # Sleep prevention automatically restored here

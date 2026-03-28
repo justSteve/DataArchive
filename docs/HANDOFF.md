@@ -77,7 +77,7 @@ Completed comprehensive production hardening across 3 phases (48-60h plan execut
 
 **Verification**:
 ```bash
-python -c "import sqlite3; conn = sqlite3.connect('output/archive.db'); cursor = conn.cursor(); cursor.execute('SELECT * FROM schema_migrations'); print(cursor.fetchall()); conn.close()"
+python -c "import sqlite3; conn = sqlite3.connect('data/archive.db'); cursor = conn.cursor(); cursor.execute('SELECT * FROM schema_migrations'); print(cursor.fetchall()); conn.close()"
 ```
 
 Expected output: `[('001_add_error_tracking', '2026-03-05 17:09:00', 'Add error tracking, task checkpoints, and process monitoring tables')]`

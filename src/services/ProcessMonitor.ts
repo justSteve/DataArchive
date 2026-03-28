@@ -30,7 +30,7 @@ export class ProcessMonitor {
   private staleThresholdMs: number;
   private checkInterval?: Timer;
 
-  constructor(dbPath: string = './output/archive.db', staleThresholdMs: number = 300000) {
+  constructor(dbPath: string = './data/archive.db', staleThresholdMs: number = 300000) {
     const fullPath = path.resolve(dbPath);
     this.db = new Database(fullPath);
     this.staleThresholdMs = staleThresholdMs; // Default: 5 minutes

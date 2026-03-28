@@ -303,7 +303,7 @@ export class PythonBridge {
 
     const args: string[] = [
       drivePath,
-      '--db', './output/archive.db',
+      '--db', './data/archive.db',
       '--session', sessionId.toString(),
       '--json'
     ];

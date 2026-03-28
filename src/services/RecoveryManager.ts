@@ -68,7 +68,7 @@ export class RecoveryManager {
   private recoveryTimer?: Timer;
 
   constructor(
-    dbPath: string = './output/archive.db',
+    dbPath: string = './data/archive.db',
     processMonitor?: ProcessMonitor,
     checkpointManager?: CheckpointManager
   ) {

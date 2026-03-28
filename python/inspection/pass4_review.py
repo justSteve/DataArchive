@@ -147,7 +147,7 @@ class InteractiveReview:
     """
 
     def __init__(self, db_path: Optional[str] = None,
-                 reports_dir: str = "output/reports"):
+                 reports_dir: str = "data/reports"):
         """
         Initialize the interactive review inspector.
 

@@ -19,7 +19,7 @@ def main():
     parser = argparse.ArgumentParser(description='Import Windows scan into archive.db')
     parser.add_argument('drive_letter', help='Drive letter that was scanned (e.g., D)')
     parser.add_argument('--label', help='Drive label (4 char code)')
-    parser.add_argument('--db', default='output/archive.db', help='Database path')
+    parser.add_argument('--db', default='data/archive.db', help='Database path')
     parser.add_argument('--scan-dir', default='/mnt/c/DataArchive', help='Where scan-X.csv and meta-X.json live')
     args = parser.parse_args()
 

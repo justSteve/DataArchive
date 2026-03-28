@@ -81,7 +81,7 @@ cd ..
 
 ```bash
 source python/venv/bin/activate
-python3 -c "import sys; sys.path.insert(0, 'python'); from core.database import Database; Database('output/archive.db')"
+python3 -c "import sys; sys.path.insert(0, 'python'); from core.database import Database; Database('data/archive.db')"
 deactivate
 ```
 
@@ -333,7 +333,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - DB_PATH=/app/output/archive.db
+      - DB_PATH=/app/data/archive.db
     restart: unless-stopped
 
   dataarchive-web:
@@ -389,7 +389,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
-        DB_PATH: './output/archive.db'
+        DB_PATH: './data/archive.db'
       },
       error_file: 'logs/api-error.log',
       out_file: 'logs/api-out.log',
@@ -438,7 +438,7 @@ PORT=3001
 HOST=0.0.0.0
 
 # Database
-DB_PATH=./output/archive.db
+DB_PATH=./data/archive.db
 
 # Python
 PYTHON_PATH=./python/venv/bin/python3
@@ -461,8 +461,8 @@ CORS_ORIGIN=http://localhost:5173
     "host": "0.0.0.0"
   },
   "database": {
-    "path": "./output/archive.db",
-    "backupPath": "./output/backups"
+    "path": "./data/archive.db",
+    "backupPath": "./data/backups"
   },
   "python": {
     "venvPath": "./python/venv/bin/python3",
@@ -534,10 +534,10 @@ lsof -ti:3001 | xargs kill -9
 
 ```bash
 # Check for stale connections
-fuser output/archive.db
+fuser data/archive.db
 
 # Kill stale processes
-fuser -k output/archive.db
+fuser -k data/archive.db
 ```
 
 ### Issue: Python Module Not Found
@@ -594,7 +594,7 @@ tail -f output/scan.log
 sudo systemctl stop dataarchive
 
 # Backup database
-cp output/archive.db output/archive.db.backup-$(date +%Y%m%d)
+cp data/archive.db data/archive.db.backup-$(date +%Y%m%d)
 
 # Restart application
 sudo systemctl start dataarchive
@@ -607,7 +607,7 @@ sudo systemctl start dataarchive
 ```bash
 #!/bin/bash
 BACKUP_DIR="/opt/dataarchive/backups"
-DB_PATH="/opt/dataarchive/output/archive.db"
+DB_PATH="/opt/dataarchive/data/archive.db"
 DATE=$(date +%Y%m%d-%H%M%S)
 
 mkdir -p $BACKUP_DIR
@@ -670,12 +670,12 @@ docker-compose ps
 **Check Disk Space:**
 ```bash
 df -h output/
-du -sh output/archive.db
+du -sh data/archive.db
 ```
 
 **Check Database Size:**
 ```bash
-sqlite3 output/archive.db "SELECT
+sqlite3 data/archive.db "SELECT
   (SELECT COUNT(*) FROM scans) as scans,
   (SELECT COUNT(*) FROM files) as files,
   (SELECT SUM(total_size_bytes) FROM scans) as total_bytes;"
@@ -687,10 +687,10 @@ sqlite3 output/archive.db "SELECT
 
 ```bash
 # Analyze database
-sqlite3 output/archive.db "ANALYZE;"
+sqlite3 data/archive.db "ANALYZE;"
 
 # Vacuum (reclaim space)
-sqlite3 output/archive.db "VACUUM;"
+sqlite3 data/archive.db "VACUUM;"
 ```
 
 **Node.js Optimizations:**
@@ -716,7 +716,7 @@ mv dist.backup/ dist/
 mv dist-frontend.backup/ dist-frontend/
 
 # Restore database if needed
-cp output/archive.db.backup output/archive.db
+cp data/archive.db.backup data/archive.db
 
 # Restart service
 sudo systemctl start dataarchive

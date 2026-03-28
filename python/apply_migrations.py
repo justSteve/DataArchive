@@ -51,7 +51,7 @@ def apply_migration(conn: sqlite3.Connection, migration_file: Path) -> bool:
 
 
 def main():
-    db_path = Path("output/archive.db")
+    db_path = Path("data/archive.db")
     migrations_dir = Path("migrations")
 
     if not db_path.exists():

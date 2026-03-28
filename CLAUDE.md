@@ -49,7 +49,7 @@ DataArchive v2 is a **Claude-assisted interactive drive inspection system** usin
 - **Infrastructure Layer (TypeScript)**: Express API server + React UI
 - **Domain Layer (Python)**: Multi-pass inspection, file scanning, hardware detection, OS detection
 - **Integration**: TypeScript spawns Python processes via `child_process.spawn()` with JSON over stdout/stderr
-- **Database**: Shared SQLite database (`output/archive.db`)
+- **Database**: Shared SQLite database (`data/archive.db`)
 - **Runtime**: Bun (migrated from Node.js)
 
 ## Multi-Pass Inspection Workflow
@@ -80,7 +80,7 @@ DataArchive v2 is a **Claude-assisted interactive drive inspection system** usin
 ### Key Integration Points
 - **PythonBridge** (`src/services/PythonBridge.ts`): TS<>Python process spawning
 - **DatabaseService**: SQLite access layer
-- **Reports**: Generated to `output/reports/` in markdown format
+- **Reports**: Generated to `data/reports/` in markdown format
 
 ## Graduation Status
 
@@ -125,8 +125,8 @@ python inspect_drive.py E:\ --session-id 1
 | `src/frontend/components/` | React UI components |
 | `python/inspection/` | Multi-pass inspection modules |
 | `python/core/` | Database, scanner, OS detector |
-| `output/archive.db` | SQLite database |
-| `output/reports/` | Generated inspection reports |
+| `data/archive.db` | SQLite database |
+| `data/reports/` | Generated inspection reports |
 | `.beads/issues.jsonl` | Work authorization tracking |
 
 ## Important Constraints

@@ -21,7 +21,7 @@ from collections import defaultdict
 
 HARVESTER_ROOT_WSL = Path("/mnt/c/myStuff/DataArchive/Harvester")
 HARVESTER_ROOT_WIN = r"C:\myStuff\DataArchive\Harvester"
-DB_PATH = "output/archive.db"
+DB_PATH = "data/archive.db"
 
 DEFAULT_EXCLUDE_EXT = {
     '.exe', '.dll', '.msi', '.msp', '.ocx', '.sys', '.drv',

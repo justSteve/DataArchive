@@ -69,7 +69,7 @@ router.post('/reset-database', async (req: Request, res: Response) => {
  */
 router.get('/database-stats', async (req: Request, res: Response) => {
   try {
-    const dbPath = './output/archive.db';
+    const dbPath = './data/archive.db';
 
     // Check if database exists
     if (!fs.existsSync(dbPath)) {

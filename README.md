@@ -141,7 +141,7 @@ This creates a virtual environment and installs questionary and tqdm.
 
 ```bash
 source python/venv/bin/activate
-python3 -c "import sys; sys.path.insert(0, 'python'); from core.database import Database; Database('output/archive.db')"
+python3 -c "import sys; sys.path.insert(0, 'python'); from core.database import Database; Database('data/archive.db')"
 ```
 
 This creates the SQLite database with all necessary tables.
@@ -459,17 +459,17 @@ Immediately resets database with automatic backup.
 
 All database resets automatically create a backup at:
 ```
-output/backups/archive_backup_[timestamp].db
+data/backups/archive_backup_[timestamp].db
 ```
 
 To restore a backup:
 ```bash
-cp output/backups/archive_backup_20251020_160000.db output/archive.db
+cp data/backups/archive_backup_20251020_160000.db data/archive.db
 ```
 
 View backups in the Admin tab or list manually:
 ```bash
-ls -lh output/backups/
+ls -lh data/backups/
 ```
 
 ## Troubleshooting
@@ -481,7 +481,7 @@ ls -lh output/backups/
 **Fix**: Initialize database schema:
 ```bash
 source python/venv/bin/activate
-python3 -c "from core.database import Database; Database('output/archive.db')"
+python3 -c "from core.database import Database; Database('data/archive.db')"
 ```
 
 Or use the reset script:

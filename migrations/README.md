@@ -15,7 +15,7 @@ This directory contains SQL migrations for the DataArchive database schema.
 ### Manual Application
 
 ```bash
-sqlite3 output/archive.db < migrations/001_add_error_tracking.sql
+sqlite3 data/archive.db < migrations/001_add_error_tracking.sql
 ```
 
 ### Python Application
@@ -32,7 +32,7 @@ def apply_migration(db_path: str, migration_file: Path):
         print(f"Applied migration: {migration_file.name}")
 
 # Apply all migrations in order
-db_path = "output/archive.db"
+db_path = "data/archive.db"
 migrations_dir = Path("migrations")
 for migration_file in sorted(migrations_dir.glob("*.sql")):
     apply_migration(db_path, migration_file)

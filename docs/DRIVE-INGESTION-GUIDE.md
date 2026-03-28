@@ -12,7 +12,7 @@ DataArchive v2 is **fully implemented** with two ingestion workflows:
 
 ### Database Schema
 
-**Location:** `output/archive.db`
+**Location:** `data/archive.db`
 
 **Core Tables (v1):**
 - `drives` - Physical drive hardware records
@@ -47,7 +47,7 @@ DataArchive v2 is **fully implemented** with two ingestion workflows:
 ```bash
 cd python
 venv\Scripts\activate
-python scan_drive.py Z:\ --db ../output/archive.db --json-output
+python scan_drive.py Z:\ --db ../data/archive.db --json-output
 ```
 
 **Via Web UI:**
@@ -115,7 +115,7 @@ curl -X POST http://localhost:3001/api/inspections/1/complete
 **Output:**
 - Files written to `files` table with `scan_id`
 - Hashes written to `file_hashes` table
-- Claude report written to `output/reports/session_<id>_<date>.md`
+- Claude report written to `data/reports/session_<id>_<date>.md`
 - Decision points tracked in `inspection_decisions` table
 
 ---
@@ -161,7 +161,7 @@ POST /api/inspections/start {"drivePath": "W:\\"}
 
 After both inspections complete:
 
-1. Read Claude reports in `output/reports/`
+1. Read Claude reports in `data/reports/`
 2. Review duplicate groups:
    - Within-drive duplicates (same scan_id)
    - Cross-drive duplicates (different scan_id)
@@ -269,7 +269,7 @@ CREATE TABLE file_hashes (
 # Python CLI
 cd python
 venv\Scripts\activate
-python scan_drive.py Z:\ --db ../output/archive.db --json-output
+python scan_drive.py Z:\ --db ../data/archive.db --json-output
 
 # Web UI (works out of box)
 ./start-dev.sh
@@ -348,10 +348,10 @@ http://localhost:5173
 
 # 5. Repeat for W:
 
-# 6. Review reports in output/reports/
+# 6. Review reports in data/reports/
 
 # 7. Query duplicates via SQLite
-sqlite3 output/archive.db
+sqlite3 data/archive.db
 ```
 
 ### Development Commands
@@ -410,7 +410,7 @@ tail -f python/logs/scan.log
 **Problem:** Pass 4 didn't generate report
 
 **Solution:**
-- Check `output/reports/` directory
+- Check `data/reports/` directory
 - Verify Pass 3 completed first (Pass 4 depends on Pass 3 data)
 - Check API logs: `npm run api` (should see report generation messages)
 

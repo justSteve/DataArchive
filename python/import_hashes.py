@@ -22,7 +22,7 @@ def main():
     parser = argparse.ArgumentParser(description='Import file hashes into archive.db')
     parser.add_argument('drive_letter', help='Drive letter that was hashed (e.g., D)')
     parser.add_argument('--label', required=True, help='Drive label (e.g., WWYY)')
-    parser.add_argument('--db', default='output/archive.db', help='Database path')
+    parser.add_argument('--db', default='data/archive.db', help='Database path')
     parser.add_argument('--hash-dir', default='/mnt/c/DataArchive', help='Where hash-X.csv lives')
     args = parser.parse_args()
 
