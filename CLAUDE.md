@@ -21,6 +21,27 @@ bd sync               # Sync beads changes with git
 fix: repair scan pipeline [DataArchive-xxx]
 ```
 
+## STOP — tmux Gate
+
+Before running ANY command that targets this zgent's runtime environment — installs, builds, test suites, service starts, scripts — route it through tmux, NOT Claude Code's Bash tool.
+
+Check for tmux sessions:
+```bash
+tmux list-sessions
+```
+
+Run commands in tmux:
+```bash
+tmux send-keys -t <session>:<window> '<command>' Enter
+```
+
+Capture output:
+```bash
+tmux capture-pane -t <session>:<window> -p
+```
+
+**This is not optional.** Claude Code's Bash hides friction Steve would hit. tmux surfaces it.
+
 ## Intent
 
 This project exists to consolidate a lifetime of digital history — dozens of
