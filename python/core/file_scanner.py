@@ -258,23 +258,21 @@ class FileScanner:
     def get_statistics(self, scan_id: int, database) -> Dict[str, Any]:
         """Calculate scan statistics from database"""
         with database.get_connection() as conn:
-            cursor = conn.execute("""
-                SELECT 
-                    COUNT(*) as total_files,
-                    SUM(size_bytes) as total_size,
-                    MIN(modified_date) as oldest_file,
-                    MAX(modified_date) as newest_file,
-                    MAX(size_bytes) as largest_file,
-                    extension,
-                    COUNT(*) as ext_count
-                FROM files
-                WHERE scan_id = ?
-                GROUP BY extension
-                ORDER BY ext_count DESC
-                LIMIT 1
-            """, (scan_id,))
-            
-            row = cursor.fetchone()
+            row = conn.execute("""
+                SELECT COUNT(*) as total_files,
+                       SUM(size_bytes) as total_size,
+                       MIN(modified_date) as oldest_file,
+                       MAX(modified_date) as newest_file,
+                       MAX(size_bytes) as largest_file
+                FROM files WHERE scan_id = ?
+            """, (scan_id,)).fetchone()
+
+            ext_row = conn.execute("""
+                SELECT extension, COUNT(*) as ext_count
+                FROM files WHERE scan_id = ?
+                GROUP BY extension ORDER BY ext_count DESC LIMIT 1
+            """, (scan_id,)).fetchone()
+
             if row:
                 return {
                     'total_files': row['total_files'],
@@ -282,7 +280,7 @@ class FileScanner:
                     'oldest_file_date': row['oldest_file'],
                     'newest_file_date': row['newest_file'],
                     'largest_file_size': row['largest_file'],
-                    'most_common_extension': row['extension']
+                    'most_common_extension': ext_row['extension'] if ext_row else None
                 }
         
         return {}
