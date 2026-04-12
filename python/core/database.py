@@ -286,14 +286,16 @@ class Database:
                     serial_number, model, manufacturer, size_bytes,
                     filesystem, partition_scheme, label, connection_type,
                     firmware_version, media_type, bus_type, notes,
-                    first_seen, last_scanned
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    drive_code, first_seen, last_scanned
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(serial_number) DO UPDATE SET
                     last_scanned = ?,
                     firmware_version = COALESCE(excluded.firmware_version, firmware_version),
                     media_type = COALESCE(excluded.media_type, media_type),
                     bus_type = COALESCE(excluded.bus_type, bus_type),
-                    notes = COALESCE(excluded.notes, notes)
+                    notes = COALESCE(excluded.notes, notes),
+                    drive_code = COALESCE(excluded.drive_code, drive_code),
+                    label = COALESCE(excluded.label, label)
             """, (
                 drive_info['serial_number'],
                 drive_info.get('model'),
@@ -307,6 +309,7 @@ class Database:
                 drive_info.get('media_type'),
                 drive_info.get('bus_type'),
                 drive_info.get('notes'),
+                drive_info.get('drive_code'),
                 datetime.now(),
                 datetime.now(),
                 datetime.now()

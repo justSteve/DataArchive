@@ -56,6 +56,24 @@ def main():
         help='Additional notes about the drive (e.g., "Physical label: Blue sticker")'
     )
     parser.add_argument(
+        '--drive-code',
+        help='Short drive code tag (e.g., "DVRC"); stored in drives.drive_code'
+    )
+    parser.add_argument(
+        '--drive-label',
+        help='Human-readable label for this drive record'
+    )
+    parser.add_argument(
+        '--windows-boot',
+        action='store_true',
+        help='Treat as Windows boot drive: skip Windows/Program Files at top level'
+    )
+    parser.add_argument(
+        '--hash',
+        action='store_true',
+        help='Compute inline quick hash for each file during scan'
+    )
+    parser.add_argument(
         '--json-output',
         action='store_true',
         help='Output results as JSON for programmatic consumption'
@@ -173,7 +191,9 @@ def main():
                 'firmware_version': drive_info.get('firmware_version'),
                 'media_type': drive_info.get('media_type'),
                 'bus_type': drive_info.get('bus_type'),
-                'notes': args.drive_notes
+                'notes': args.drive_notes,
+                'drive_code': args.drive_code,
+                'label': args.drive_label
             }
             drive_id = db.insert_drive(drive_record)
             logger.info(f"✓ Drive record created: ID {drive_id}")
@@ -211,14 +231,15 @@ def main():
             logger.info("\n--- STAGE 3: Full File Scan ---")
             logger.info("This may take 10-30 minutes for large drives...")
             
-            scanner = FileScanner(str(drive_path))
-            
+            scanner = FileScanner(str(drive_path), is_windows_boot=args.windows_boot)
+
             file_count = 0
             total_size = 0
             batch = []
             batch_size = 1000
-            
-            for file_info in scanner.scan(show_progress=not args.no_progress):
+
+            for file_info in scanner.scan(show_progress=not args.no_progress,
+                                          enable_hashing=args.hash):
                 batch.append(file_info)
                 file_count += 1
                 total_size += file_info['size_bytes']
