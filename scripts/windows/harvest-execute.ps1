@@ -5,8 +5,8 @@
 #
 # Usage (elevated PowerShell):
 #   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-#   & C:\Users\steve\OneDrive\Tools\DataArchiver\harvest-execute.ps1 -Manifest C:\myStuff\DataArchive\Harvester\manifests\harvest-WWYY.jsonl
-#   & C:\Users\steve\OneDrive\Tools\DataArchiver\harvest-execute.ps1 -Manifest C:\myStuff\DataArchive\Harvester\manifests\harvest-WWYY.jsonl -DryRun
+#   & C:\Users\steve\OneDrive\Tools\DataArchiver\harvest-execute.ps1 -Manifest C:\Users\steve\OneDrive\Tools\DataArchiver\manifests\harvest-WWYY.jsonl
+#   & C:\Users\steve\OneDrive\Tools\DataArchiver\harvest-execute.ps1 -Manifest C:\Users\steve\OneDrive\Tools\DataArchiver\manifests\harvest-WWYY.jsonl -DryRun
 param(
     [Parameter(Mandatory=$true)][string]$Manifest,
     [switch]$DryRun
@@ -110,11 +110,15 @@ foreach ($entry in $copyEntries) {
             New-Item -ItemType Directory $dstDir -Force | Out-Null
         }
 
+        # Use long-path prefix for paths near or over 260 chars
+        $srcLP = if ($src.Length -ge 240) { "\\?\$src" } else { $src }
+        $dstLP = if ($dst.Length -ge 240) { "\\?\$dst" } else { $dst }
+
         # Copy
-        Copy-Item -Path $src -Destination $dst -Force -ErrorAction Stop
+        Copy-Item -LiteralPath $srcLP -Destination $dstLP -Force -ErrorAction Stop
 
         # Verify size
-        $actualSize = (Get-Item -LiteralPath $dst -ErrorAction Stop).Length
+        $actualSize = (Get-Item -LiteralPath $dstLP -ErrorAction Stop).Length
         if ($actualSize -ne $expectedSize) {
             $rec = @{
                 src = $src; dst = $dst; status = "error"

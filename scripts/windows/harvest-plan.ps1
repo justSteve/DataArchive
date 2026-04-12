@@ -14,7 +14,7 @@ param(
     [string]$Staging = "F:"
 )
 
-$configPath = "C:\myStuff\DataArchive\Harvester\configs\${Label}.json"
+$configPath = "C:\Users\steve\OneDrive\Tools\DataArchiver\configs\${Label}.json"
 if (-not (Test-Path $configPath)) {
     Write-Error "Config not found: $configPath"
     exit 1
@@ -36,4 +36,4 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "-- Next step: execute in elevated PowerShell --"
 Write-Host "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass"
-Write-Host "& `"C:\Users\steve\OneDrive\Tools\DataArchiver\harvest-execute.ps1`" -Manifest `"C:\myStuff\DataArchive\Harvester\manifests\harvest-${Label}.jsonl`""
+Write-Host "& `"C:\Users\steve\OneDrive\Tools\DataArchiver\harvest-execute.ps1`" -Manifest `"C:\Users\steve\OneDrive\Tools\DataArchiver\manifests\harvest-${Label}.jsonl`""

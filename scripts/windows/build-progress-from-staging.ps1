@@ -4,7 +4,7 @@
 # dedup, so subsequent drives skip files already staged.
 #
 # Usage (elevated PowerShell):
-#   & C:\myStuff\DataArchive\scripts\windows\build-progress-from-staging.ps1 -StagingPath F:\WWYY -Label WWYY
+#   & C:\Users\steve\OneDrive\Tools\DataArchiver\scripts\windows\build-progress-from-staging.ps1 -StagingPath F:\WWYY -Label WWYY
 param(
     [Parameter(Mandatory=$true)][string]$StagingPath,
     [Parameter(Mandatory=$true)][string]$Label
@@ -12,7 +12,7 @@ param(
 
 $ErrorActionPreference = "Continue"
 
-$harvesterRoot = "C:\myStuff\DataArchive\Harvester"
+$harvesterRoot = "C:\Users\steve\OneDrive\Tools\DataArchiver\Harvester"
 $progressDir = Join-Path $harvesterRoot "progress"
 $progressFile = Join-Path $progressDir "harvest-${Label}.progress.jsonl"
 

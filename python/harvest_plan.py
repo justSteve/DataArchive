@@ -7,8 +7,8 @@ filters and cross-drive deduplication, outputs a JSONL manifest for the
 PowerShell executor.
 
 Usage:
-    python harvest_plan.py --config /mnt/c/myStuff/DataArchive/Harvester/configs/WWYY.json
-    python harvest_plan.py --config /mnt/c/myStuff/DataArchive/Harvester/configs/Tera1A.json
+    python harvest_plan.py --config /mnt/c/Users/steve/OneDrive/Tools/DataArchiver/configs/WWYY.json
+    python harvest_plan.py --config /mnt/c/Users/steve/OneDrive/Tools/DataArchiver/configs/Tera1A.json
 """
 
 import sys
@@ -19,8 +19,8 @@ import fnmatch
 from pathlib import Path
 from collections import defaultdict
 
-HARVESTER_ROOT_WSL = Path("/mnt/c/myStuff/DataArchive/Harvester")
-HARVESTER_ROOT_WIN = r"C:\myStuff\DataArchive\Harvester"
+HARVESTER_ROOT_WSL = Path("/mnt/c/Users/steve/OneDrive/Tools/DataArchiver")
+HARVESTER_ROOT_WIN = r"C:\Users\steve\OneDrive\Tools\DataArchiver"
 DB_PATH = "data/archive.db"
 
 DEFAULT_EXCLUDE_EXT = {
