@@ -148,7 +148,8 @@ foreach ($entry in $copyEntries) {
         $elapsed = (Get-Date) - $startTime
         $rate = if ($elapsed.TotalSeconds -gt 0) { [math]::Round($total / $elapsed.TotalMinutes, 0) } else { 0 }
         $pct = [math]::Round($total / $remaining * 100, 1)
-        $status = "${pct}% | ${copied} copied | ${errors} errors | $([math]::Round($bytesCopied/1GB,2)) GB | ${rate}/min"
+        $gbCopied = [math]::Round($bytesCopied/1GB, 2)
+        $status = "$pct% - $copied copied - $errors errors - $gbCopied GB - $rate/min"
         Write-Host $status
         $progressWriter.Flush()
     }
