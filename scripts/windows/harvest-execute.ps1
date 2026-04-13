@@ -1,5 +1,5 @@
 #Requires -Version 5.1
-# Harvest Executor — Stage 2 of the harvest engine
+# Harvest Executor -Stage 2 of the harvest engine
 # Reads a JSONL manifest from harvest_plan.py, copies files to staging with
 # resume support, size verification, and progress logging.
 #
@@ -14,7 +14,7 @@ param(
 
 $ErrorActionPreference = "Continue"
 
-# ── Derive paths ──
+# -- Derive paths --
 $manifestName = [System.IO.Path]::GetFileNameWithoutExtension($Manifest)
 $harvesterRoot = Split-Path (Split-Path $Manifest -Parent) -Parent
 $progressDir = Join-Path $harvesterRoot "progress"
@@ -25,9 +25,9 @@ if (-not (Test-Path $progressDir)) { New-Item -ItemType Directory $progressDir -
 $startTime = Get-Date
 Write-Host "Harvest executor started: $startTime"
 Write-Host "Manifest: $Manifest"
-if ($DryRun) { Write-Host "[DRY RUN — no files will be copied]" }
+if ($DryRun) { Write-Host "[DRY RUN -no files will be copied]" }
 
-# ── Load prior progress for resume ──
+# -- Load prior progress for resume --
 $done = @{}
 if (Test-Path $progressFile) {
     $lines = [System.IO.File]::ReadAllLines($progressFile)
@@ -44,7 +44,7 @@ if (Test-Path $progressFile) {
     Write-Host "Resuming: $($done.Count) files already completed"
 }
 
-# ── Read manifest, filter to copy actions ──
+# -- Read manifest, filter to copy actions --
 Write-Host "Reading manifest..."
 $copyEntries = [System.Collections.Generic.List[PSCustomObject]]::new()
 $totalManifest = 0
@@ -76,7 +76,7 @@ Write-Host "Manifest: $totalManifest entries, $toCopy to copy, $alreadyDone alre
 Write-Host "Estimated size: $([math]::Round($totalCopyBytes/1GB, 2)) GB"
 Write-Host ""
 
-# ── Execute copies ──
+# -- Execute copies --
 $copied = 0
 $skipped = 0
 $errors = 0
