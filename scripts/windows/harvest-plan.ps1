@@ -11,7 +11,7 @@
 #   & harvest-plan.ps1 -Label Tera1A -Staging G:
 param(
     [Parameter(Mandatory=$true)][string]$Label,
-    [string]$Staging = "F:"
+    [string]$Staging = "W:"
 )
 
 $configPath = "C:\Users\steve\OneDrive\Tools\DataArchiver\configs\${Label}.json"

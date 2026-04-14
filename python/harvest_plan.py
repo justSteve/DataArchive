@@ -107,7 +107,7 @@ def main():
     parser = argparse.ArgumentParser(description='Generate harvest manifest')
     parser.add_argument('--config', required=True, help='Path to drive config JSON')
     parser.add_argument('--db', default=DB_PATH, help='Database path')
-    parser.add_argument('--staging', default='F:', help='Staging drive letter')
+    parser.add_argument('--staging', default='W:', help='Staging drive letter')
     args = parser.parse_args()
 
     config = load_config(args.config)
