@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "data-archive": {
+      "command": "bun",
+      "args": ["run", "/root/projects/DataArchive/src/mcp/index.ts"],
+      "env": {
+        "DA_DB_PATH": "/root/projects/DataArchive/data/archive.db"
+      }
+    }
+  }
+}
