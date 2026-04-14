@@ -135,6 +135,12 @@ bun test
 cd python && source .venv/bin/activate
 pip install -r requirements.txt
 python inspect_drive.py E:\ --session-id 1
+
+# Long-running scans/hash passes: always tee to data/logs/ (durable), never /tmp.
+# data/ is gitignored so data/logs/ is local-only — create it on first use:
+mkdir -p data/logs
+python scan_drive.py /mnt/y --drive-code WHYD --hash 2>&1 | tee data/logs/whyd-scan-$(date +%Y%m%d).log
+python populate_hashes.py --scan-id 18 2>&1 | tee data/logs/rrti-hash-$(date +%Y%m%d).log
 ```
 
 ## Key Files

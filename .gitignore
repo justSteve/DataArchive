@@ -99,3 +99,4 @@ ecosystem.config.js
 .dolt/
 *.db
 .venv/
+.claude/scheduled_tasks.lock
