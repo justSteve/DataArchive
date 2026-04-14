@@ -40,6 +40,28 @@ def load_config(config_path):
         return json.load(f)
 
 
+def load_shadow_index(db, current_label):
+    # (basename, size) index over every catalog file that lacks a sha256 hash,
+    # so 'copy' decisions can flag potential dupes on unhashed files for telemetry.
+    # Hashed files are already covered by hash-based dedup.
+    idx = defaultdict(set)
+    query = """
+        SELECT d.drive_code, f.path, f.size_bytes
+        FROM files f
+        JOIN scans s ON f.scan_id = s.scan_id
+        JOIN drives d ON s.drive_id = d.drive_id
+        LEFT JOIN file_hashes fh
+          ON fh.file_id = f.file_id AND fh.hash_type = 'sha256'
+        WHERE fh.file_id IS NULL
+          AND f.size_bytes > 0
+          AND d.drive_code != ?
+    """
+    for drive_code, path, size_bytes in db.execute(query, (current_label,)):
+        basename = path.replace('\\', '/').rsplit('/', 1)[-1].lower()
+        idx[(basename, size_bytes)].add(drive_code)
+    return idx
+
+
 def load_claimed_hashes(progress_dir):
     """Load hashes already claimed by prior harvests."""
     claimed = {}  # hash -> destination path
@@ -153,6 +175,13 @@ def main():
 
     print(f"  {len(file_hashes)} files have hashes")
 
+    # Shadow-dupe index: (name,size) over every unhashed file in the catalog — weak
+    # signal, telemetry only. Lets us detect if skipping older unhashed drives is
+    # causing significant over-copy.
+    shadow_idx = load_shadow_index(db, label)
+    shadow_drives = sorted(set().union(*shadow_idx.values())) if shadow_idx else []
+    print(f"  shadow index: {len(shadow_idx)} (name,size) keys across drives {shadow_drives}")
+
     # Query all files
     files = db.execute(
         "SELECT file_id, path, size_bytes, extension FROM files WHERE scan_id = ?",
@@ -235,6 +264,12 @@ def main():
             stats['copy'] += 1
             stats['total_copy_bytes'] += size_bytes or 0
 
+            basename = norm_path.rsplit('/', 1)[-1].lower()
+            shadows = shadow_idx.get((basename, size_bytes))
+            if shadows:
+                rec["shadow_candidates"] = sorted(shadows)
+                stats['shadow_flagged'] += 1
+
             # Claim the hash
             if h:
                 claimed[h] = dst_path
@@ -248,11 +283,12 @@ def main():
     print(f"  Windows: {HARVESTER_ROOT_WIN}\\manifests\\harvest-{label}.jsonl")
     print(f"\nSummary:")
     print(f"  Copy:       {stats['copy']:>8} files  ({stats['total_copy_bytes']/1073741824:.1f} GB)")
+    print(f"    of which shadow-flagged: {stats['shadow_flagged']:>6}  (name+size match on unhashed drives)")
     print(f"  Skip(ext):  {stats['skip:ext']:>8} files")
     print(f"  Skip(path): {stats['skip:path']:>8} files")
     print(f"  Skip(dupe): {stats['skip:dupe']:>8} files")
     print(f"  Skip(zero): {stats['skip:zero']:>8} files")
-    total = sum(v for k, v in stats.items() if k != 'total_copy_bytes')
+    total = sum(v for k, v in stats.items() if k not in ('total_copy_bytes', 'shadow_flagged'))
     print(f"  Total:      {total:>8} files")
 
     print(f"\n── Execute in elevated PowerShell: ──")
