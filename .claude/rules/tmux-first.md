@@ -1,44 +1,57 @@
-# Rule: tmux-First
+# Convention: tmux When It Helps
 
-You are a tmux-first entity. Commands that target your runtime environment MUST execute in tmux via `tmux send-keys`, not in Claude Code's Bash tool.
+Claude Code's Bash is the **default** execution environment. Use tmux via
+`tmux send-keys` when it genuinely adds value — not as a hard gate.
 
-## Gate Check
+This convention was previously called "tmux-first" and enforced via hook.
+Steve relaxed it on 2026-04-08: the gate added more overhead than value.
+COO and every zgent now exercise judgment about when tmux is the right
+tool rather than treating Bash as forbidden.
 
-Before running a command in Bash, ask: "Would Steve run this in his environment?"
+## Default behavior
 
-1. If YES → run it in tmux via `tmux send-keys -t <session>:<window> '<command>' Enter`
-2. If NO (read-only, git, file exploration) → Bash is fine
+Run commands in Claude Code's Bash. Read output, reason over it, continue.
+This is the fast path for the vast majority of operational work:
+diagnostics, file inspection, git operations, one-shot builds, tests that
+complete in a reasonable time, installs, validations, ad-hoc scripts.
 
-## What MUST Run in tmux
+## When tmux is the right tool
 
-- Installing dependencies (pip, npm, bun, apt)
-- Running builds or test suites
-- Starting/restarting services, servers, bots
-- Running scripts you wrote for the zgent
-- Any command you'd hand Steve as "run this"
-- Verifying tools, wrappers, or utilities before presenting them
+- **Steve explicitly asks** ("run this in tmux", "send-keys that", "drop it into pane X")
+- **Interactive programs** that expect a real terminal (htop, vim, claude itself, any REPL)
+- **Long-running services or daemons** that must persist past the Claude Code session
+  (background servers, watchers, feeds)
+- **Live-watch scenarios** where Steve wants to see output scroll in a pane
+  while he does other work elsewhere
+- **Multi-pane orchestration** where the layout itself is the deliverable
+  (dashboards, MOO rooms, desk hubs)
 
-## What Does NOT Require tmux
+## When Bash is the right tool
 
-- Reading files, searching code, editing files (Claude Code tools are better)
-- Git operations (status, log, diff, commit, push)
-- Quick diagnostics (file existence, process status, env vars)
-- Commands purely within gtOps that don't target a zgent environment
+- Commands where Claude needs the output for its own reasoning
+- Read-only diagnostics and file operations
+- Short-lived commands that complete in seconds and return text
+- "Can we check X?" or "Is Y present?" questions
+- Commands whose output you want to quote back to Steve in the response
 
-## How
+## Judgment, not gates
 
-1. Ensure a tmux session exists: `tmux list-sessions`
-2. Use the zgent's window or create one:
-   `tmux new-window -t gt-root -n <zgent-name> -c /root/projects/<Zgent>`
-3. Send the command:
-   `tmux send-keys -t gt-root:<zgent-name> '<command>' Enter`
-4. Capture and verify output:
-   `tmux capture-pane -t gt-root:<zgent-name> -p`
+Earlier iterations treated tmux as mandatory for any runtime-facing command.
+That created friction: Claude would stop mid-task to ask Steve to open a tmux
+session, or refuse to run a 3-second check because "it targets the runtime."
+The result was overhead without commensurate benefit.
 
-## Delivery Verification
+The new model: **pick the right tool per situation**. If you're unsure,
+default to Bash and mention that tmux is available if Steve wants to move
+the command there. Steve will ask when he wants it.
 
-Before declaring tmux-facing work "done":
-1. Capture every pane the user will see
-2. Fix everything that looks wrong — error messages, stale output, broken layouts
+## Delivery verification (when you DO use tmux)
+
+When tmux is the right choice, verify end-to-end:
+
+1. Capture every pane the user will see (`tmux capture-pane -t <target> -p`)
+2. Fix anything that looks wrong — error messages, stale output, broken layouts
 3. Drive the interaction yourself via send-keys
-4. Present results in plain language — lead with what Steve sees, not what you built
+4. Present results in plain language — lead with what Steve sees, not what
+   you built
+5. Don't hand Steve a tmux command to type when you can send-keys it yourself

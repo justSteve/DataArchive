@@ -2,7 +2,7 @@
 
 **Zgent Status:** zgent (in-process toward Zgent certification)
 **Role:** Service Provider (Tier 1) — enterprise data archival, drive inspection, artifact storage
-**Bead Prefix:** `DataArchive`
+**Bead Prefix:** `da`
 
 ## STOP — Beads Gate (Read This First)
 
@@ -13,34 +13,12 @@ bd ready              # See available work
 bd create -t "title"  # Create a new bead if none covers your work
 bd update <id> --status in_progress  # Claim work
 bd close <id>         # Mark work complete
-bd sync               # Sync beads changes with git
 ```
 
 **This is not optional.** No bead = no work. Reference the bead ID in all commit messages:
 ```
-fix: repair scan pipeline [DataArchive-xxx]
+fix: repair scan pipeline [da-xxx]
 ```
-
-## STOP — tmux Gate
-
-Before running ANY command that targets this zgent's runtime environment — installs, builds, test suites, service starts, scripts — route it through tmux, NOT Claude Code's Bash tool.
-
-Check for tmux sessions:
-```bash
-tmux list-sessions
-```
-
-Run commands in tmux:
-```bash
-tmux send-keys -t <session>:<window> '<command>' Enter
-```
-
-Capture output:
-```bash
-tmux capture-pane -t <session>:<window> -p
-```
-
-**This is not optional.** Claude Code's Bash hides friction Steve would hit. tmux surfaces it.
 
 ## Intent
 
@@ -60,6 +38,8 @@ Claude's role is **archivist**, not tool operator. When presented with a drive:
 Steve declares intent. Claude decides how to get there — what tools to build,
 what inspection techniques to use, what order to process drives, what depth
 each one needs. The toolset evolves as we learn what these drives contain.
+
+<!-- PLACEHOLDER: Steve to review SOI and advisory voice during walkthrough -->
 
 ## What This Is
 

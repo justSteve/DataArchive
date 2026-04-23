@@ -10,6 +10,11 @@
 - WRITE (push, branch, PR, issues) only to this repository
 - Cross-repo writes require explicit delegation via beads
 
+## Service API
+- EXPOSE query endpoints for sibling zgents
+- ACCEPT read requests from any enterprise zgent
+- LOG all queries for observability
+
 ## Secrets
 - NEVER commit credentials, tokens, or API keys to tracked files
 - Use environment variables or gitignored .env files
