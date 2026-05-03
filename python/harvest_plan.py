@@ -84,6 +84,25 @@ def load_claimed_hashes(progress_dir):
     return claimed
 
 
+def load_dvrc_hashes(db):
+    """Load all sha256 hashes from the DVRC drive (canonical C: pre-repave capture).
+
+    Returns dict of hash -> DVRC file path.
+    """
+    dvrc_hashes = {}
+    rows = db.execute("""
+        SELECT fh.hash_value, f.path
+        FROM file_hashes fh
+        JOIN files f ON fh.file_id = f.file_id
+        JOIN scans s ON f.scan_id = s.scan_id
+        JOIN drives d ON s.drive_id = d.drive_id
+        WHERE d.drive_code = 'DVRC' AND fh.hash_type = 'sha256'
+    """).fetchall()
+    for hash_value, path in rows:
+        dvrc_hashes[hash_value] = path
+    return dvrc_hashes
+
+
 def normalize_path(p):
     """Normalize separators to forward slash for matching."""
     return p.replace('\\', '/')
@@ -164,6 +183,18 @@ def main():
     progress_dir = HARVESTER_ROOT_WSL / "progress"
     claimed = load_claimed_hashes(progress_dir)
     print(f"  {len(claimed)} hashes claimed by prior harvests")
+
+    # DVRC-canonical dedup: when processing any non-DVRC drive, pre-claim all
+    # DVRC hashes so its copies are treated as canonical and duplicates on
+    # other drives are automatically skipped.
+    if label != 'DVRC':
+        dvrc_hashes = load_dvrc_hashes(db)
+        pre_claimed = 0
+        for h, dvrc_path in dvrc_hashes.items():
+            if h not in claimed:
+                claimed[h] = f"[DVRC] {dvrc_path}"
+                pre_claimed += 1
+        print(f"  {len(dvrc_hashes)} DVRC hashes loaded, {pre_claimed} new pre-claims")
 
     # Load file hashes for this scan
     file_hashes = {}

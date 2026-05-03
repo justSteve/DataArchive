@@ -87,10 +87,12 @@ class DuplicateRemover:
                     f.size_bytes,
                     f.modified_date,
                     f.created_date,
-                    s.mount_point as drive_letter
+                    s.mount_point as drive_letter,
+                    d.drive_code
                 FROM files f
                 JOIN file_hashes fh ON f.file_id = fh.file_id
                 JOIN scans s ON f.scan_id = s.scan_id
+                JOIN drives d ON s.drive_id = d.drive_id
                 WHERE fh.hash_value = ? AND fh.hash_type = 'quick_hash'
                 ORDER BY f.path
             """, (hash_value,))
@@ -122,6 +124,11 @@ class DuplicateRemover:
         reasons = []
 
         path = file['path']
+
+        # Priority 0 (highest): DVRC canonical copy always wins
+        if file.get('drive_code') == 'DVRC':
+            score += 1000
+            reasons.append("DVRC canonical")
 
         # Priority 1: Avoid backup/temp/cache directories
         bad_patterns = ['backup', 'temp', '.old', 'cache', 'recycle']
