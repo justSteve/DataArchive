@@ -301,6 +301,8 @@ class Database:
             import importlib.util
             migrations_module = Path(__file__).resolve().parent.parent / "apply_migrations.py"
             spec = importlib.util.spec_from_file_location("apply_migrations", migrations_module)
+            if spec is None or spec.loader is None:
+                raise ImportError(f"Cannot load migration module from {migrations_module}")
             mod = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
             _run_migrations = mod.run_migrations
@@ -362,7 +364,7 @@ class Database:
             logger.debug(f"Inserted/updated drive: {drive_id}")
             return drive_id
     
-    def start_scan(self, drive_id: int, mount_point: str) -> int:
+    def start_scan(self, drive_id: int, mount_point: str) -> Optional[int]:
         """Start a new scan session"""
         with self.get_connection("start_scan") as conn:
             cursor = conn.execute("""
@@ -458,7 +460,7 @@ class Database:
                     continue
                     
                 current = tree
-                for i, part in enumerate(path_parts[:-1]):
+                for part in path_parts[:-1]:
                     if part not in current:
                         current[part] = {
                             'type': 'dir',
@@ -476,7 +478,7 @@ class Database:
     # V2 INSPECTION METHODS
     # =========================================
 
-    def start_inspection(self, drive_id: int, beads_issue_id: Optional[str] = None) -> int:
+    def start_inspection(self, drive_id: int, beads_issue_id: Optional[str] = None) -> Optional[int]:
         """Start a new inspection session"""
         with self.get_connection() as conn:
             cursor = conn.execute("""
@@ -584,7 +586,7 @@ class Database:
     def record_decision(self, session_id: int, decision_type: str,
                         decision_key: str, decision_value: str,
                         description: Optional[str] = None,
-                        decided_by: str = 'user') -> int:
+                        decided_by: str = 'user') -> Optional[int]:
         """Record an inspection decision"""
         with self.get_connection() as conn:
             cursor = conn.execute("""
@@ -610,7 +612,7 @@ class Database:
             return [dict(row) for row in cursor.fetchall()]
 
     def insert_file_hash(self, scan_id: int, file_id: int,
-                         hash_type: str, hash_value: str) -> int:
+                         hash_type: str, hash_value: str) -> Optional[int]:
         """Insert a file hash for duplicate detection"""
         with self.get_connection() as conn:
             cursor = conn.execute("""

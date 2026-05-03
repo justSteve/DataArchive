@@ -6,6 +6,7 @@ import sys
 import sqlite3
 from pathlib import Path
 from datetime import datetime
+from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).parent / 'python'))
 from core.logger import get_logger
@@ -86,7 +87,7 @@ def apply_migration(conn: sqlite3.Connection, migration_file: Path) -> bool:
         return False
 
 
-def run_migrations(conn: sqlite3.Connection, migrations_dir: Path = None) -> int:
+def run_migrations(conn: sqlite3.Connection, migrations_dir: Optional[Path] = None) -> int:
     """Apply all pending migrations to an open connection.
 
     This is the library-friendly entry point, called by Database._init_schema()
@@ -152,6 +153,7 @@ def main():
         print(f"Error: Migrations directory not found: {migrations_dir}")
         sys.exit(1)
 
+    conn: Optional[sqlite3.Connection] = None
     try:
         conn = sqlite3.connect(str(db_path))
         logger.info(f"Connected to database: {db_path}")
@@ -202,7 +204,7 @@ def main():
         sys.exit(1)
 
     finally:
-        if 'conn' in locals():
+        if conn is not None:
             conn.close()
 
 
