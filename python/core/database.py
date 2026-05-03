@@ -11,6 +11,9 @@ from contextlib import contextmanager
 
 from .logger import get_logger
 
+# Lazy import to avoid circular dependency — resolved at call site in _init_schema
+_run_migrations = None
+
 logger = get_logger(__name__)
 
 
@@ -276,8 +279,43 @@ class Database:
                 CREATE INDEX IF NOT EXISTS idx_dup_groups_hash ON duplicate_groups(hash_value);
                 CREATE INDEX IF NOT EXISTS idx_dup_members_group ON duplicate_members(group_id);
             """)
+
+        # Apply pending migrations (adds columns, tables, etc. introduced
+        # after the base v1/v2 schema above).  Migrations are the single
+        # source of truth for post-v1 schema changes — we deliberately do
+        # NOT add those columns to the CREATE TABLE statements.
+        self._apply_migrations()
+
         logger.info("Database schema initialized")
-    
+
+    def _apply_migrations(self):
+        """Run pending SQL migrations against this database.
+
+        Uses the migration runner from python/apply_migrations.py which reads
+        migrations/*.sql files, skips already-applied ones, and handles
+        idempotent ALTER TABLE gracefully.
+        """
+        global _run_migrations
+        if _run_migrations is None:
+            # Lazy import — apply_migrations lives outside the core package
+            import importlib.util
+            migrations_module = Path(__file__).resolve().parent.parent / "apply_migrations.py"
+            spec = importlib.util.spec_from_file_location("apply_migrations", migrations_module)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            _run_migrations = mod.run_migrations
+
+        conn = sqlite3.connect(str(self.db_path), timeout=30.0)
+        try:
+            count = _run_migrations(conn)
+            if count:
+                logger.info(f"Applied {count} migration(s) during schema init")
+        except RuntimeError as e:
+            logger.error(f"Migration failure during schema init: {e}")
+            raise
+        finally:
+            conn.close()
+
     def insert_drive(self, drive_info: Dict[str, Any]) -> int:
         """Insert or update drive information"""
         with self.get_connection("insert_drive") as conn:

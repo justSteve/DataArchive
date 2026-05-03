@@ -25,7 +25,13 @@ def get_applied_migrations(conn: sqlite3.Connection) -> set:
 
 
 def apply_migration(conn: sqlite3.Connection, migration_file: Path) -> bool:
-    """Apply a single migration file"""
+    """Apply a single migration file.
+
+    Handles idempotent ALTER TABLE ADD COLUMN: if the column already exists
+    (e.g. added ad-hoc to production before the migration was formalized),
+    the "duplicate column name" error is caught, the migration is recorded
+    in schema_migrations, and we return success.
+    """
     migration_id = migration_file.stem  # filename without .sql
 
     try:
@@ -43,11 +49,92 @@ def apply_migration(conn: sqlite3.Connection, migration_file: Path) -> bool:
         print(f"[OK] Successfully applied migration: {migration_id}\n")
         return True
 
+    except sqlite3.OperationalError as e:
+        if "duplicate column name" in str(e).lower():
+            # Column already exists (ad-hoc ALTER TABLE applied before this
+            # migration was formalized). Record the migration as applied so
+            # subsequent runs skip it.
+            logger.warning(
+                f"Migration {migration_id}: column already exists, "
+                f"recording as applied"
+            )
+            print(f"[OK] Migration {migration_id}: column already exists, "
+                  f"recording as applied\n")
+            try:
+                conn.execute(
+                    "INSERT OR IGNORE INTO schema_migrations "
+                    "(migration_id, applied_at, description) VALUES (?, ?, ?)",
+                    (migration_id, datetime.now().isoformat(),
+                     f"Applied (column already existed)")
+                )
+                conn.commit()
+            except sqlite3.Error as rec_err:
+                logger.warning(
+                    f"Could not record migration {migration_id}: {rec_err}"
+                )
+            return True
+        else:
+            logger.error(f"Failed to apply migration {migration_id}: {e}", exc_info=True)
+            print(f"[FAILED] Failed to apply migration {migration_id}: {e}\n")
+            conn.rollback()
+            return False
+
     except sqlite3.Error as e:
         logger.error(f"Failed to apply migration {migration_id}: {e}", exc_info=True)
         print(f"[FAILED] Failed to apply migration {migration_id}: {e}\n")
         conn.rollback()
         return False
+
+
+def run_migrations(conn: sqlite3.Connection, migrations_dir: Path = None) -> int:
+    """Apply all pending migrations to an open connection.
+
+    This is the library-friendly entry point, called by Database._init_schema()
+    after the base CREATE TABLE statements have run.
+
+    Args:
+        conn: An open sqlite3 connection (caller manages its lifecycle).
+        migrations_dir: Path to migrations directory. Defaults to
+            <project_root>/migrations/ resolved relative to this file.
+
+    Returns:
+        Number of migrations applied (0 if all were already applied or
+        no migration files exist).
+
+    Raises:
+        RuntimeError: If a migration fails (non-idempotent error).
+    """
+    if migrations_dir is None:
+        # Resolve <repo>/migrations/ relative to this file's location
+        migrations_dir = Path(__file__).resolve().parent.parent / "migrations"
+
+    if not migrations_dir.exists():
+        logger.debug(f"No migrations directory at {migrations_dir}, skipping")
+        return 0
+
+    migration_files = sorted(migrations_dir.glob("*.sql"))
+    if not migration_files:
+        return 0
+
+    applied = get_applied_migrations(conn)
+    applied_count = 0
+
+    for migration_file in migration_files:
+        migration_id = migration_file.stem
+        if migration_id in applied:
+            logger.debug(f"Skipping already applied migration: {migration_id}")
+            continue
+
+        if apply_migration(conn, migration_file):
+            applied_count += 1
+        else:
+            raise RuntimeError(
+                f"Migration {migration_id} failed; schema may be inconsistent"
+            )
+
+    if applied_count:
+        logger.info(f"Migrations complete: {applied_count} applied")
+    return applied_count
 
 
 def main():
