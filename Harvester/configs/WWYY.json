@@ -1,0 +1,16 @@
+{
+  "label": "WWYY",
+  "drive_letter": "D",
+  "scan_id": 19,
+  "include": [
+    "Code",
+    "Backups/restore",
+    "Downloads/*.pdf",
+    "Downloads/RestoreTarget",
+    "Downloads/Video",
+    "Video"
+  ],
+  "include_root_ext": [".xls", ".zip"],
+  "exclude_ext": [".exe", ".dll", ".msi", ".msp", ".ocx", ".sys", ".drv", ".com", ".scr", ".cpl", ".iso", ".cab", ".cat"],
+  "exclude_paths": ["Boot", "$RECYCLE.BIN", "System Volume Information", "Windows"]
+}

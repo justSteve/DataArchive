@@ -1,0 +1,26 @@
+{
+  "label": "Tera1A",
+  "drive_letter": "E",
+  "scan_id": 32,
+  "include": [
+    "Code",
+    "CodeBackup",
+    "web",
+    "Eagle",
+    "Repositories",
+    "tools",
+    "FEBE",
+    "aspconfVideo",
+    "DVDs",
+    "New folder",
+    "PicasaRoot",
+    "My Documents",
+    "MyMusic",
+    "MyVideo",
+    "My Pictures",
+    "Files"
+  ],
+  "include_root_ext": [".bak", ".zip", ".rpt", ".pdc"],
+  "exclude_ext": [".exe", ".dll", ".msi", ".msp", ".ocx", ".sys", ".drv", ".com", ".scr", ".cpl", ".iso", ".cab", ".cat"],
+  "exclude_paths": ["Boot", "$RECYCLE.BIN", "System Volume Information", "Windows"]
+}
