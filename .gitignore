@@ -68,6 +68,10 @@ coverage/
 Thumbs.db
 nul
 
+# Harvester runtime (manifests, progress, logs are generated output)
+Harvester/manifests/
+Harvester/progress/
+
 # Temporary files
 tmp/
 temp/
