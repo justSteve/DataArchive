@@ -5,6 +5,20 @@ Main script to scan a drive and catalog all files
 Usage:
     python scan_drive.py /mnt/e
     python scan_drive.py /path/to/drive
+
+NOTE: For Windows drives with NTFS ACLs that block WSL access (e.g.
+Users/steve/ on Windows boot drives is completely invisible from WSL),
+use scan_drive_win.py from Windows Python instead:
+
+    # From Windows cmd/PowerShell:
+    python scan_drive_win.py H:\\ --drive-code POCL --hash
+
+    # Then import the JSONL into archive.db from WSL:
+    python3 import_scan.py scan-POCL-20260502.jsonl --db data/archive.db
+
+scan_drive_win.py outputs JSONL; import_scan.py reads it into the DB.
+This avoids both the ACL visibility problem and the SQLite-over-UNC
+locking issue.
 """
 
 import sys
