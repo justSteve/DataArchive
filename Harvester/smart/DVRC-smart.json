@@ -1,0 +1,25 @@
+{
+    "timestamp":  "2026-05-04T10:59:49.3559289-05:00",
+    "health_status":  "Healthy",
+    "drive_letter":  "C",
+    "drive_code":  "DVRC",
+    "disk":  {
+                 "firmware_version":  "5B2QGXA7",
+                 "physical_sector":  4096,
+                 "model":  "Samsung SSD 980 PRO 1TB",
+                 "operational_status":  "OK",
+                 "device_number":  null,
+                 "friendly_name":  "Samsung SSD 980 PRO 1TB",
+                 "size_gb":  931.51,
+                 "serial_number":  "0025_38BA_31A5_45C5.",
+                 "logical_sector":  512,
+                 "health_status":  "Healthy",
+                 "bus_type":  "NVMe",
+                 "size_bytes":  1000204886016,
+                 "media_type":  "SSD"
+             },
+    "reliability":  {
+                        "error":  "Access to a CIM resource was not available to the client."
+                    },
+    "operational_status":  "OK"
+}

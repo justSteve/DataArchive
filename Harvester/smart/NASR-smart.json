@@ -1,0 +1,40 @@
+{
+  "reliability": {
+    "write_latency_max": 6,
+    "wear": 0,
+    "read_latency_max": 117,
+    "temperature_celsius": 30,
+    "flush_latency_max": 0,
+    "load_unload_cycle_count": 2052,
+    "power_on_hours": 47626,
+    "write_errors_uncorrected": null,
+    "read_errors_corrected": 0,
+    "load_unload_cycle_count_max": null,
+    "start_stop_cycle_count": 2076,
+    "read_errors_uncorrected": 0,
+    "start_stop_cycle_count_max": null,
+    "write_errors_total": null,
+    "write_errors_corrected": null,
+    "read_errors_total": 0
+  },
+  "timestamp": "2026-05-05T07:47:30.6344221-05:00",
+  "disk": {
+    "size_gb": 1863.02,
+    "size_bytes": 2000398934016,
+    "logical_sector": 512,
+    "firmware_version": "0",
+    "media_type": "HDD",
+    "operational_status": "OK",
+    "friendly_name": "Sabrent Dual SATA Bridge",
+    "bus_type": "USB",
+    "device_number": null,
+    "health_status": "Healthy",
+    "serial_number": "00000000000000000000",
+    "physical_sector": 4096,
+    "model": "Dual SATA Bridge"
+  },
+  "drive_letter": "I",
+  "health_status": "Healthy",
+  "drive_code": "NASR",
+  "operational_status": "OK"
+}

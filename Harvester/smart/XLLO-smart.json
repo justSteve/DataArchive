@@ -1,0 +1,22 @@
+﻿{
+    "timestamp":  "2026-05-04T07:14:52.1699022-05:00",
+    "health_status":  "Healthy",
+    "drive_letter":  "I",
+    "drive_code":  "XLLO",
+    "disk":  {
+                 "media_type":  "HDD",
+                 "health_status":  "Healthy",
+                 "serial_number":  "00000000000000000000",
+                 "operational_status":  "OK",
+                 "size_bytes":  2000398934016,
+                 "model":  "Dual SATA Bridge"
+             },
+    "reliability":  {
+                        "power_on_hours":  null,
+                        "write_errors_total":  null,
+                        "wear":  null,
+                        "read_errors_total":  null,
+                        "temperature":  null
+                    },
+    "operational_status":  "OK"
+}

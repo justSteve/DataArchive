@@ -1,0 +1,24 @@
+﻿{
+    "timestamp":  "2026-05-04T07:42:05.7429544-05:00",
+    "health_status":  "Healthy",
+    "drive_letter":  "I",
+    "drive_code":  "2teri",
+    "disk":  {
+                 "model":  "Dual SATA Bridge",
+                 "operational_status":  "OK",
+                 "filesystem_label":  "2teri",
+                 "serial_number":  "00000000000000000000",
+                 "filesystem":  "NTFS",
+                 "health_status":  "Healthy",
+                 "size_bytes":  2000397791232,
+                 "media_type":  "HDD"
+             },
+    "reliability":  {
+                        "power_on_hours":  null,
+                        "write_errors_total":  null,
+                        "wear":  null,
+                        "read_errors_total":  null,
+                        "temperature":  null
+                    },
+    "operational_status":  "OK"
+}

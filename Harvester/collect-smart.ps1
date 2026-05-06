@@ -1,5 +1,4 @@
 #Requires -Version 5.1
-#Requires -RunAsAdministrator
 # Collect SMART data for a physical disk and write JSON for health_check.py ingestion.
 #
 # Usage (from elevated PowerShell):

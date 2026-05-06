@@ -1,0 +1,23 @@
+﻿{
+    "timestamp":  "2026-05-04T06:35:50.4318058-05:00",
+    "health_status":  "Healthy",
+    "drive_letter":  "H",
+    "drive_code":  "POCL",
+    "disk":  {
+                 "media_type":  "SSD",
+                 "health_status":  "Healthy",
+                 "serial_number":  "S1SUNSAF942388A",
+                 "operational_status":  "OK",
+                 "size_bytes":  256060514304,
+                 "model":  "Samsung SSD 850 PRO 256GB"
+             },
+    "reliability":  {
+                        "wear":  null,
+                        "start_stop_cycle_count":  null,
+                        "write_errors_total":  null,
+                        "power_on_hours":  null,
+                        "read_errors_total":  null,
+                        "temperature":  null
+                    },
+    "operational_status":  "OK"
+}

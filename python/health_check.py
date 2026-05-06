@@ -258,7 +258,7 @@ def store_read_test(
 def ingest_smart_json(conn: sqlite3.Connection, drive_code: str, drive_id, smart_path: Path):
     """Read a SMART JSON file and insert a check_type='smart' row."""
     logger.info(f"Found SMART data: {smart_path}")
-    with open(smart_path, "r", encoding="utf-8") as f:
+    with open(smart_path, "r", encoding="utf-8-sig") as f:
         smart_data = json.load(f)
 
     # Derive an overall status from the Windows HealthStatus field
