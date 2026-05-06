@@ -9,7 +9,7 @@ param(
 )
 
 $ErrorActionPreference = "Continue"
-$harvesterRoot = "C:\myStuff\DataArchive\Harvester"
+$harvesterRoot = $PSScriptRoot
 $progressDir = "$harvesterRoot\progress"
 
 if (-not (Test-Path $progressDir)) { New-Item -ItemType Directory $progressDir -Force | Out-Null }

@@ -19,8 +19,8 @@ import fnmatch
 from pathlib import Path
 from collections import defaultdict
 
-HARVESTER_ROOT_WSL = Path("/mnt/c/Users/steve/OneDrive/Tools/DataArchiver")
-HARVESTER_ROOT_WIN = r"C:\Users\steve\OneDrive\Tools\DataArchiver"
+HARVESTER_ROOT_WSL = Path("/root/projects/DataArchive/Harvester")
+HARVESTER_ROOT_WIN = r"\\wsl.localhost\Ubuntu\root\projects\DataArchive\Harvester"
 DB_PATH = "data/archive.db"
 
 DEFAULT_EXCLUDE_EXT = {

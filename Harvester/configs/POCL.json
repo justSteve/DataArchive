@@ -1,0 +1,20 @@
+{
+  "label": "POCL",
+  "drive_letter": "H",
+  "scan_id": 36,
+  "include": [
+    "Users/steve/Pictures",
+    "Users/steve/Documents",
+    "Users/steve/Music",
+    "Users/steve/Desktop",
+    "Users/steve/Downloads",
+    "Users/steve/source",
+    "Users/steve/OneDrive",
+    "Users/steve/SharePoint",
+    "Users/steve/OneDrive - OnCourse Learning",
+    "Users/steve/BankWebinars.git"
+  ],
+  "include_root_ext": [".mdf", ".ldf", ".xls", ".xlsx", ".doc", ".docx", ".pdf", ".zip", ".bak"],
+  "exclude_ext": [".exe", ".dll", ".msi", ".msp", ".ocx", ".sys", ".drv", ".com", ".scr", ".cpl", ".iso", ".cab", ".cat"],
+  "exclude_paths": ["Boot", "$RECYCLE.BIN", "System Volume Information", "Windows", "ProgramData", "Program Files", "Program Files (x86)", "Recovery", "PerfLogs", "Config.Msi"]
+}
