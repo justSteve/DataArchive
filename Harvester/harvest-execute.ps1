@@ -1,5 +1,5 @@
 #Requires -Version 5.1
-# Harvest Executor — Stage 2 of the harvest engine.
+# Harvest Executor - Stage 2 of the harvest engine.
 # Reads a JSONL manifest and copies files with resume, logging, and verification.
 #
 # Usage:
@@ -24,7 +24,7 @@ $msg = "Harvest started: $startTime | Manifest: $Manifest"
 Write-Host $msg
 $msg | Out-File $logFile -Encoding UTF8
 
-# ── Load prior progress for resume ──
+# -- Load prior progress for resume --
 $completed = @{}
 if (Test-Path $progressFile) {
     Write-Host "Loading progress for resume..."
@@ -42,7 +42,7 @@ if (Test-Path $progressFile) {
     Write-Host "  $lineCount files already completed, will skip"
 }
 
-# ── Read manifest, filter to copy actions ──
+# -- Read manifest, filter to copy actions --
 Write-Host "Reading manifest..."
 $toCopy = [System.Collections.Generic.List[object]]::new()
 $totalManifest = 0
@@ -71,11 +71,11 @@ foreach ($rec in $toCopy) {
 Write-Host "Manifest: $totalManifest entries, $($toCopy.Count) to copy, $alreadyDone already done, $($pending.Count) pending"
 
 if ($pending.Count -eq 0) {
-    Write-Host "Nothing to do — all files already copied."
+    Write-Host "Nothing to do - all files already copied."
     return
 }
 
-# ── Execute copies ──
+# -- Execute copies --
 $progressWriter = [System.IO.StreamWriter]::new($progressFile, $true, [System.Text.UTF8Encoding]::new($false))
 $copied = 0
 $errors = 0
