@@ -105,3 +105,6 @@ ecosystem.config.js
 *.db
 .venv/
 .claude/scheduled_tasks.lock
+
+# Steve Capability Profile evidence layer — LOCAL ONLY, never push (co-8ers / spec 2026-07-19)
+corpus/evidence/
