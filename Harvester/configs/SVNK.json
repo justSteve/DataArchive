@@ -1,0 +1,14 @@
+{
+  "label": "SVNK",
+  "drive_letter": "K",
+  "scan_id": 38,
+  "_note": "Samsung SSD 830 Series (S/N S0VVNEAC800147). Abandoned Windows 8.1-era laptop: installed Aug 2013, last hibernated Oct 2016. The local user profile (Desktop/Documents/Downloads/Pictures/Music/Videos) is EMPTY except for desktop.ini — everything lived in OneDrive. The real payload is Users/Steve/OneDrive (~32GB, all locally hydrated and verified readable): Documents 15.8GB, Pictures 8.5GB (2013-2014 Canon + Android camera roll incl. a 1GB .MOV and dozens of 200-500MB phone videos), Photos 6.9GB, Code, and trading spreadsheets (BTC.xls/csv/xlsx, NullOrders.xlsx). Favorites = 500 .url browser bookmarks. NTUSER.DAT = user registry hive (forensic/config artifact). Everything else on the drive is Windows/WinSxS/Program Files/AppData cache and volatile hiberfil/pagefile/swapfile — not harvest-worthy. Cross-drive dedup (DVRC-canonical + prior harvests) removes anything already captured. [da-89t]",
+  "include": [
+    "Users/Steve/OneDrive",
+    "Users/Steve/Favorites",
+    "Users/Steve/NTUSER.DAT"
+  ],
+  "include_root_ext": [],
+  "exclude_ext": [".exe", ".dll", ".msi", ".msp", ".ocx", ".sys", ".drv", ".com", ".scr", ".cpl", ".iso", ".cab", ".cat", ".tmp"],
+  "exclude_paths": ["Boot", "$RECYCLE.BIN", "System Volume Information", "Windows", "ProgramData", "Program Files", "Program Files (x86)", "Recovery", "PerfLogs"]
+}
