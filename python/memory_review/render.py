@@ -592,7 +592,11 @@ _JS = r"""
         persist();
         setState("ok", "Recorded " + doc.recorded + " decision(s) — " +
                        doc.inserted + " new, " + doc.updated + " changed. " +
-                       "Ledger line count now " + doc.ledger_entries + ".");
+                       (doc.packet_complete
+                         ? "Packet complete; the review window has moved on."
+                         : doc.outstanding + " still undecided — they come back " +
+                           "in the next packet.") +
+                       " Ledger line count now " + doc.ledger_entries + ".");
         document.getElementById("fallback").classList.add("hidden");
       })
       .catch(function (err) {

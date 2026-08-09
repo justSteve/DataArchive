@@ -1,0 +1,20 @@
+# Memory review pipeline [da-04r] — append to the crontab.
+#
+# Runbook: /root/projects/DataArchive/docs/memory-review-pipeline.md
+# Delegated from COO co-85xyp (Memory Review Pipeline).
+#
+# 23:15 sits after COO's 22:30 zepo pulse so the two do not contend for the box,
+# and before the 06:30 corpus pull. None of these spawns a Claude session.
+
+# Daily: collect from Claude Monitor + the local memory tiers, build the packet,
+# refresh the desk page. Exit 0 healthy / 1 degraded / 2 failed.
+15 23 * * * /usr/bin/bash /root/projects/DataArchive/scripts/cron/memory-review-daily.sh
+
+# Every five minutes: restart the decision-capture endpoint if it is not
+# listening. Self-heals a reboot or a crash, and keeps its heartbeat fresh so
+# the endpoint's absence is detectable rather than assumed.
+*/5 * * * * /usr/bin/bash /root/projects/DataArchive/scripts/cron/memory-review-endpoint.sh supervise
+
+# Weekly sitting: refresh the packet, ensure the endpoint is up, open the page.
+# Friday 16:30 is a starting cadence — move this line to change it.
+30 16 * * 5 /usr/bin/bash /root/projects/DataArchive/scripts/cron/memory-review-weekly.sh

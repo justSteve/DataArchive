@@ -588,6 +588,23 @@ class SubmissionTests(unittest.TestCase):
         self.assertEqual(len(tombstones), 1)
         self.assertEqual(tombstones[0]["reason"], "this was never my position")
 
+    def test_partial_submission_does_not_advance_the_review_window(self):
+        """Answering some items must not discard the rest. Advancing the window
+        on any submission made 66 of 71 unanswered items vanish from the next
+        packet — observed during the build, 2026-08-09."""
+        result = self._submit([{"dedupe_key": "k1", "decision": "confirm"}])
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["outstanding"], 1)
+        self.assertFalse(result["packet_complete"])
+        with Store(self.db) as store:
+            self.assertIsNone(store.get_cursor(analyze.LAST_REVIEW_CURSOR))
+
+    def test_completing_a_packet_advances_the_review_window(self):
+        self._submit([{"dedupe_key": "k1", "decision": "confirm"},
+                      {"dedupe_key": "k2", "decision": "defer"}])
+        with Store(self.db) as store:
+            self.assertIsNotNone(store.get_cursor(analyze.LAST_REVIEW_CURSOR))
+
     def test_empty_batch_is_rejected(self):
         self.assertFalse(self._submit([])["ok"])
 

@@ -286,7 +286,17 @@ def apply_submission(document: dict, db_path: Path | str | None = None) -> dict:
                              f"git-tracked ledger write FAILED: {exc}. Re-run this "
                              "submission once the ledger path is writable."}
 
-        analyze.mark_reviewed(store)
+        # Advance the review window ONLY when every item in the packet has been
+        # ruled on. Advancing on any submission would mean answering five of
+        # seventy-one items silently discarded the other sixty-six from the next
+        # packet's "new since last review" window — work vanishing because it was
+        # partly done, which is the shape of failure this pipeline exists to
+        # stop making.
+        answered = {row["dedupe_key"] for row in store.adjudications_for_packet(packet_id)}
+        outstanding = [row["dedupe_key"] for row in store.packet_items(packet_id)
+                       if row["dedupe_key"] not in answered]
+        if not outstanding:
+            analyze.mark_reviewed(store)
         stats = ledger.stats()
         proposals = [e for e in ledger_entries if e["decision"] == "graduate"]
 
@@ -296,6 +306,8 @@ def apply_submission(document: dict, db_path: Path | str | None = None) -> dict:
         "recorded": inserted + updated,
         "inserted": inserted,
         "updated": updated,
+        "outstanding": len(outstanding),
+        "packet_complete": not outstanding,
         "ledger_entries": stats["entries"],
         "graduation_proposals": len(proposals),
         "note": "Recorded as proposals. Nothing here wrote to a knowledge bundle — "
