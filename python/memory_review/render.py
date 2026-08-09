@@ -660,6 +660,9 @@ def write_page(payload: dict, path: Path | None = None,
             handle.write(markup)
             handle.flush()
             os.fsync(handle.fileno())
+        # mkstemp creates 0600; every other page in /var/moo/desk is 0644, and
+        # Steve reads this one from Windows over the 9p share.
+        os.chmod(tmp, 0o644)
         os.replace(tmp, path)
     except Exception:
         try:

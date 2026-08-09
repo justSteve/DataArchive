@@ -213,6 +213,9 @@ def write(path: Path, document: dict) -> None:
             handle.write("\n")
             handle.flush()
             os.fsync(handle.fileno())
+        # mkstemp creates 0600 and os.replace preserves it; every other file in
+        # /var/moo/state is 0644 and other tooling reads these.
+        os.chmod(tmp, 0o644)
         os.replace(tmp, path)
     except Exception:
         try:

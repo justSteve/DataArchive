@@ -263,6 +263,8 @@ class HeartbeatTests(unittest.TestCase):
             self.assertEqual(json.loads(path.read_text())["status"], "ok")
             self.assertEqual([p for p in path.parent.iterdir()
                               if p.name.startswith(".hb-")], [])
+            self.assertEqual(oct(path.stat().st_mode)[-3:], "644",
+                             "other tooling reads these; 0600 from mkstemp leaks")
 
 
 class CMTimestampTests(unittest.TestCase):
@@ -779,6 +781,8 @@ class RenderTests(unittest.TestCase):
             self.assertTrue(path.is_file())
             self.assertEqual([p for p in path.parent.iterdir()
                               if p.name.startswith(".desk-")], [])
+            self.assertEqual(oct(path.stat().st_mode)[-3:], "644",
+                             "Steve reads the page from Windows over the 9p share")
 
 
 class PacketBuildTests(unittest.TestCase):
