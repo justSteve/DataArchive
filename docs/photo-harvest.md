@@ -28,9 +28,22 @@ cd /root/projects/DataArchive/python
 .venv/bin/python -m photo_harvest held                 # held photos, by location only
 ```
 
-Every stage resumes from `status`; Ctrl+C is safe between photos. The send
-stage is not built yet: it needs a funded Anthropic key in
-`/home/vault/DataArchive/env` as `ANTHROPIC_API_KEY`.
+Every stage resumes from `status`; Ctrl+C is safe between photos.
+
+```bash
+.venv/bin/python -m photo_harvest check                 # one tiny request: key and credit
+.venv/bin/python -m photo_harvest send --size 500       # one batch: submit, wait, store, delete
+.venv/bin/python -m photo_harvest collect <batch id>    # finish a batch after an interruption
+.venv/bin/python -m photo_harvest page                  # desk page of described photos
+```
+
+The key is `ANTHROPIC_API_KEY` in `/home/vault/DataArchive/env` (written with
+`COO/factory/scripts/vault-set.py DataArchive ANTHROPIC_API_KEY`), read into
+memory only. Spending is paid from the Max plan's monthly API credits. `send`
+refuses a batch that could take total spend past `--budget` (default $20),
+counted from the token totals on stored results. Each batch is deleted from
+Anthropic's service once its results are stored. If `send` is interrupted
+after submitting, rows stay `submitted` with their `batch_id`; run `collect`.
 
 ### Where copies are looked for
 

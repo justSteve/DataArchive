@@ -4,6 +4,10 @@
     python -m photo_harvest prepare   [--limit N]   # prepare + local screen
     python -m photo_harvest status
     python -m photo_harvest held                   # held photos, by location only
+    python -m photo_harvest check                  # one tiny request: key and credit
+    python -m photo_harvest send --size 200        # one batch: submit, wait, store, delete
+    python -m photo_harvest collect BATCH_ID       # finish a batch after an interruption
+    python -m photo_harvest page                   # desk page of described photos
 
 Run from DataArchive/python with its .venv. Every stage resumes from the
 status column; Ctrl+C is safe between photos.
@@ -71,6 +75,31 @@ def cmd_held(cfg: Config, args) -> int:
     return 0
 
 
+def cmd_check(cfg: Config, args) -> int:
+    from .send import check
+    out = check()
+    print(json.dumps(out, sort_keys=True))
+    return 0 if out["ok"] else 3
+
+
+def cmd_send(cfg: Config, args) -> int:
+    from .send import run_batch
+    print(json.dumps(run_batch(cfg, args.size, args.budget), sort_keys=True))
+    return 0
+
+
+def cmd_collect(cfg: Config, args) -> int:
+    from .send import collect
+    print(json.dumps(collect(cfg, args.batch_id), sort_keys=True))
+    return 0
+
+
+def cmd_page(cfg: Config, args) -> int:
+    from .render import render
+    print(render(cfg))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="photo_harvest", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -83,12 +112,20 @@ def main(argv: list[str] | None = None) -> int:
                             help="look again for photos marked unreadable")
     sub.add_parser("status")
     sub.add_parser("held")
+    sub.add_parser("check")
+    sub.add_parser("page")
+    sp = sub.add_parser("send")
+    sp.add_argument("--size", type=int, default=200)
+    sp.add_argument("--budget", type=float, default=20.0, help="spending stop, USD")
+    sp = sub.add_parser("collect")
+    sp.add_argument("batch_id")
     args = p.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     try:
         cfg = Config.from_env()
         return {"inventory": cmd_inventory, "prepare": cmd_prepare,
-                "status": cmd_status, "held": cmd_held}[args.cmd](cfg, args)
-    except (store.StoreError, ValueError) as exc:
+                "status": cmd_status, "held": cmd_held, "check": cmd_check,
+                "send": cmd_send, "collect": cmd_collect, "page": cmd_page}[args.cmd](cfg, args)
+    except (store.StoreError, ValueError, RuntimeError) as exc:
         log.error("%s", exc)
         return 2

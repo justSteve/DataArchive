@@ -3,3 +3,4 @@ tqdm==4.66.1
 pillow==13.0.0
 pillow-heif==1.8.1
 nudenet==3.4.2
+anthropic==2.3.0

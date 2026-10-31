@@ -225,5 +225,65 @@ class HarvestTest(unittest.TestCase):
                 store.update(conn, "x", status="sent-ish")
 
 
+class SendTest(HarvestTest):
+    """Result handling, with fake batch results shaped like the SDK's."""
+
+    def _row(self, sha):
+        self._pending(sha, f"{sha[:4]}.jpg")
+        with store.connect(self.db) as conn:
+            inventory.run(conn, self.cfg)
+            store.update(conn, sha, status="submitted", batch_id="b1")
+            conn.commit()
+        work_path(self.cfg, sha).parent.mkdir(parents=True, exist_ok=True)
+        work_path(self.cfg, sha).write_bytes(b"x")
+
+    @staticmethod
+    def _result(sha, text=None, stop="end_turn", kind="succeeded"):
+        usage = SimpleNamespace(input_tokens=1700, output_tokens=90)
+        msg = SimpleNamespace(stop_reason=stop, usage=usage,
+                              content=[SimpleNamespace(type="text", text=text or "")])
+        err = SimpleNamespace(error=SimpleNamespace(message="overloaded"))
+        return SimpleNamespace(custom_id=sha, result=SimpleNamespace(type=kind, message=msg, error=err))
+
+    def test_described_result_is_stored_and_copy_removed(self):
+        from photo_harvest.send import apply_result, spent
+        sha = "5" * 64
+        self._row(sha)
+        body = {"description": "Two boys on a dock.", "tags": ["people", "water or boat"],
+                "extra_tags": ["dock", "summer", "lake", "extra"], "people": 2, "setting": "outdoor",
+                "text_visible": "", "quality": "fine", "sensitive": False}
+        with store.connect(self.db) as conn:
+            self.assertEqual(apply_result(conn, self._result(sha, json.dumps(body)), self.cfg), "described")
+            conn.commit()
+            self.assertAlmostEqual(spent(conn), 1700 / 1e6 * 0.05 + 90 / 1e6 * 0.25)
+        row = self.rows()[sha]
+        self.assertEqual(row["description"], "Two boys on a dock.")
+        self.assertEqual(json.loads(row["tags_json"]), ["people", "water or boat", "dock", "summer", "lake"])
+        self.assertIsNone(row["text_visible"])
+        self.assertFalse(work_path(self.cfg, sha).exists())
+
+    def test_refusal_and_error_and_garbage(self):
+        from photo_harvest.send import apply_result
+        for sha, res, want in (
+            ("6" * 64, self._result("6" * 64, stop="refusal"), "declined"),
+            ("7" * 64, self._result("7" * 64, kind="errored"), "failed"),
+            ("8" * 64, self._result("8" * 64, text="not json"), "failed"),
+        ):
+            self._row(sha)
+            with store.connect(self.db) as conn:
+                self.assertEqual(apply_result(conn, res, self.cfg), want)
+                conn.commit()
+            self.assertEqual(self.rows()[sha]["status"], want)
+
+    def test_load_key_reads_only_the_named_line(self):
+        from photo_harvest.send import SendError, load_key
+        vault = self.tmp / "env"
+        vault.write_text("OTHER=1\nexport ANTHROPIC_API_KEY='sk-ant-test'\n")
+        self.assertEqual(load_key(vault), "sk-ant-test")
+        vault.write_text("OTHER=1\n")
+        with self.assertRaises(SendError):
+            load_key(vault)
+
+
 if __name__ == "__main__":
     unittest.main()
