@@ -1,0 +1,74 @@
+# Photo Description Harvest — Runbook
+
+*Delegated from COO bead co-06tcu (Steve, 2026-10-30). Plan:
+`/root/projects/COO/myDesk/reports/photo-description-harvest-plan.md`.*
+
+Gives every unique catalogued photo a one-sentence description and tags from
+Claude Haiku 5.5 through Anthropic's Message Batches API. Results go in
+`data/archive.db`, table `photo_harvest`, one row per SHA-256.
+
+## What never leaves this machine
+
+- Any photo the local screen holds (`held_sensitive`). Its prepared copy is
+  deleted the moment it is flagged, so no sendable copy exists.
+- The photo's own date, camera and GPS location. They are read from the
+  original into the table; the copy that is sent has no metadata at all.
+- Originals are only read, never changed or moved.
+
+## Stages
+
+Run from `DataArchive/python` with its venv:
+
+```bash
+cd /root/projects/DataArchive/python
+.venv/bin/python -m photo_harvest inventory            # add new fingerprints
+.venv/bin/python -m photo_harvest inventory --recheck  # look again for unreadable ones
+.venv/bin/python -m photo_harvest prepare --limit 500  # prepare + local screen
+.venv/bin/python -m photo_harvest status               # counts by status
+.venv/bin/python -m photo_harvest held                 # held photos, by location only
+```
+
+Every stage resumes from `status`; Ctrl+C is safe between photos. The send
+stage is not built yet: it needs a funded Anthropic key in
+`/home/vault/DataArchive/env` as `ANTHROPIC_API_KEY`.
+
+### Where copies are looked for
+
+`/mnt/z/Harvest/<drive_code>/<path>`, then each alternate root
+(`PHOTO_HARVEST_ALT_ROOTS`, default `/mnt/f:/mnt/w`), then wherever
+`Harvester/manifests/harvest-<drive_code>.jsonl` says the copy went.
+
+### Status values
+
+See `migrations/004_add_photo_harvest.sql`. `skipped_path` covers software and
+system folders (`inventory.SKIP_PATH_PARTS`); a photo is skipped only when every
+copy of it would be.
+
+## Settings
+
+All in `photo_harvest/config.py`, each overridable by environment variable:
+database, roots, work folder (`/var/moo/photo-harvest/work`), size floor
+(20 KB, 200 px), long side 1568 px, screen threshold 0.25 (low on purpose).
+
+## Tests
+
+```bash
+cd /root/projects/DataArchive && PYTHONPATH=python python/.venv/bin/python -m unittest python/tests/test_photo_harvest.py -v
+```
+
+## Undo
+
+`DROP TABLE photo_harvest; DELETE FROM schema_migrations WHERE migration_id='004_add_photo_harvest';`
+and `rm -r /var/moo/photo-harvest`. Nothing else in the catalog is touched.
+
+## Findings from the first inventory (2026-10-30)
+
+- 33,830 unique photo fingerprints: 17,345 locatable, 6,951 under software
+  folders, 2,238 too small, 7,296 not found on any attached drive.
+- About 5,200 of the not-found are Tera1A `PicasaRoot` (including Moms Scans).
+  The Tera1A manifest records them copied to `F:\Tera1A\PicasaRoot`, which does
+  not exist on F: or Z: today.
+- 71 SVNK OneDrive photos were catalogued and harvested as all-zero files
+  (cloud placeholders). The catalog hash is of the zeros. At least one has a
+  real copy elsewhere under a different hash (RRTI, Picasa Backup - All Moms
+  Scanned Photos).
