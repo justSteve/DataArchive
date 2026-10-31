@@ -76,8 +76,9 @@ and `rm -r /var/moo/photo-harvest`. Nothing else in the catalog is touched.
 
 ## Findings from the first inventory (2026-10-30)
 
-- 33,830 unique photo fingerprints: 17,345 locatable, 6,951 under software
-  folders, 2,238 too small, 7,296 not found on any attached drive.
+- 30,570 unique photos. (The first count, 33,830, double-counted 3,260
+  photos the catalog stores under both an upper- and a lower-case fingerprint;
+  merged 2026-10-31, backup in /var/moo/photo-harvest/backups/.)
 - About 5,200 of the not-found are Tera1A `PicasaRoot` (including Moms Scans).
   The Tera1A manifest records them copied to `F:\Tera1A\PicasaRoot`, which does
   not exist on F: or Z: today.

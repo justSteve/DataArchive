@@ -148,6 +148,17 @@ class HarvestTest(unittest.TestCase):
             self.assertEqual(inventory.run(conn, self.cfg, recheck=True), {"pending": 1})
         self.assertEqual(self.rows()["3" * 64]["status"], "pending")
 
+    def test_upper_and_lower_case_fingerprints_are_one_photo(self):
+        self.add_copy("ab" * 32, 1, "Pictures/one.jpg")
+        self.add_copy("AB" * 32, 2, "Backup/one.jpg")
+        make_photo(self.root / "AAAA" / "Pictures" / "one.jpg")
+        with store.connect(self.db) as conn:
+            inventory.run(conn, self.cfg)
+            self.assertEqual(inventory.run(conn, self.cfg), {})
+        rows = self.rows()
+        self.assertEqual(list(rows), ["ab" * 32])
+        self.assertEqual(rows["ab" * 32]["copies"], 2)
+
     def test_no_copy_on_disk_is_unreadable_and_rerun_adds_nothing(self):
         self.add_copy("e" * 64, 1, "Pictures/gone.jpg")
         with store.connect(self.db) as conn:

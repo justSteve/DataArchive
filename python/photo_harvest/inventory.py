@@ -107,12 +107,14 @@ class Manifests:
 
 
 def candidates(conn: sqlite3.Connection, recheck: bool = False) -> dict[str, list[Candidate]]:
+    # The catalog stores some fingerprints upper-case (by scanner); one photo,
+    # one row, so everything here is lower-case.
     marks = ",".join("?" for _ in PHOTO_EXTENSIONS)
-    scope = ("h.hash_value IN (SELECT sha256 FROM photo_harvest WHERE status = 'unreadable')"
-             if recheck else "h.hash_value NOT IN (SELECT sha256 FROM photo_harvest)")
+    scope = ("lower(h.hash_value) IN (SELECT sha256 FROM photo_harvest WHERE status = 'unreadable')"
+             if recheck else "lower(h.hash_value) NOT IN (SELECT sha256 FROM photo_harvest)")
     rows = conn.execute(
         f"""
-        SELECT h.hash_value, f.file_id, d.drive_code, f.path, f.size_bytes,
+        SELECT lower(h.hash_value), f.file_id, d.drive_code, f.path, f.size_bytes,
                lower(f.extension)
         FROM files f
         JOIN file_hashes h ON h.file_id = f.file_id AND h.hash_type = 'sha256'
@@ -120,7 +122,7 @@ def candidates(conn: sqlite3.Connection, recheck: bool = False) -> dict[str, lis
         JOIN drives d ON d.drive_id = s.drive_id
         WHERE lower(f.extension) IN ({marks})
           AND {scope}
-        ORDER BY h.hash_value, f.file_id
+        ORDER BY lower(h.hash_value), f.file_id
         """,
         PHOTO_EXTENSIONS,
     ).fetchall()
