@@ -8,6 +8,7 @@
     python -m photo_harvest send --size 200        # one batch: submit, wait, store, delete
     python -m photo_harvest collect BATCH_ID       # finish a batch after an interruption
     python -m photo_harvest page                   # desk page of described photos
+    python -m photo_harvest run --chunk 300        # prepare + send until nothing is left
 
 Run from DataArchive/python with its .venv. Every stage resumes from the
 status column; Ctrl+C is safe between photos.
@@ -19,6 +20,9 @@ import argparse
 import json
 import logging
 import sys
+import time
+from pathlib import Path
+from types import SimpleNamespace
 
 from . import inventory, store
 from .config import Config
@@ -100,6 +104,65 @@ def cmd_page(cfg: Config, args) -> int:
     return 0
 
 
+PROGRESS = Path("/var/moo/photo-harvest/progress.json")
+
+
+def _progress(cfg: Config, state: str, **extra) -> None:
+    from .send import spent
+    with store.connect(cfg.db_path) as conn:
+        body = {"state": state, "ts": int(time.time()), "counts": store.counts(conn),
+                "spent_usd": round(spent(conn), 4), **extra}
+    tmp = PROGRESS.with_suffix(".tmp")
+    tmp.write_text(json.dumps(body, sort_keys=True, indent=1))
+    tmp.chmod(0o644)
+    tmp.replace(PROGRESS)
+
+
+def cmd_run(cfg: Config, args) -> int:
+    """Alternate prepare and send until no photo is pending or ready.
+
+    Each round prepares up to `chunk` photos, then sends every ready photo in
+    batches of `chunk`. Finishes any batch left submitted by an interruption
+    first. Stops on the spending stop or on three failed rounds in a row.
+    """
+    from .send import SendError, collect, run_batch
+    with store.connect(cfg.db_path) as conn:
+        open_batches = [r[0] for r in conn.execute(
+            "SELECT DISTINCT batch_id FROM photo_harvest WHERE status='submitted' AND batch_id IS NOT NULL")]
+    for b in open_batches:
+        log.info("finishing interrupted batch %s", b)
+        collect(cfg, b)
+    strikes, rounds = 0, 0
+    while True:
+        with store.connect(cfg.db_path) as conn:
+            c = store.counts(conn)
+        if not c.get("pending") and not c.get("ready"):
+            break
+        rounds += 1
+        _progress(cfg, "running", round=rounds)
+        try:
+            if c.get("pending") and c.get("ready", 0) < args.chunk:
+                cmd_prepare(cfg, SimpleNamespace(limit=args.chunk))
+            out = run_batch(cfg, args.chunk, args.budget)
+            log.info("round %d: %s", rounds, out)
+            strikes = 0
+        except SendError as exc:  # spending stop: never retried
+            log.error("%s", exc)
+            _progress(cfg, "stopped", reason=str(exc))
+            return 4
+        except Exception as exc:  # network, API outage: back off, three strikes
+            strikes += 1
+            log.exception("round %d failed (%d/3)", rounds, strikes)
+            if strikes >= 3:
+                _progress(cfg, "failed", reason=f"{type(exc).__name__}: {exc}"[:300])
+                return 5
+            time.sleep(300 * strikes)
+    _progress(cfg, "done", rounds=rounds)
+    from .render import render
+    render(cfg)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="photo_harvest", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -117,6 +180,9 @@ def main(argv: list[str] | None = None) -> int:
     sp = sub.add_parser("send")
     sp.add_argument("--size", type=int, default=200)
     sp.add_argument("--budget", type=float, default=20.0, help="spending stop, USD")
+    sp = sub.add_parser("run")
+    sp.add_argument("--chunk", type=int, default=300)
+    sp.add_argument("--budget", type=float, default=20.0, help="spending stop, USD")
     sp = sub.add_parser("collect")
     sp.add_argument("batch_id")
     args = p.parse_args(argv)
@@ -125,7 +191,8 @@ def main(argv: list[str] | None = None) -> int:
         cfg = Config.from_env()
         return {"inventory": cmd_inventory, "prepare": cmd_prepare,
                 "status": cmd_status, "held": cmd_held, "check": cmd_check,
-                "send": cmd_send, "collect": cmd_collect, "page": cmd_page}[args.cmd](cfg, args)
+                "send": cmd_send, "collect": cmd_collect, "page": cmd_page,
+                "run": cmd_run}[args.cmd](cfg, args)
     except (store.StoreError, ValueError, RuntimeError) as exc:
         log.error("%s", exc)
         return 2

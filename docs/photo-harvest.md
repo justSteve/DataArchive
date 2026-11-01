@@ -45,6 +45,16 @@ counted from the token totals on stored results. Each batch is deleted from
 Anthropic's service once its results are stored. If `send` is interrupted
 after submitting, rows stay `submitted` with their `batch_id`; run `collect`.
 
+### Unattended full run
+
+```bash
+systemd-run --unit=photo-harvest-run --working-directory=/root/projects/DataArchive/python \
+  /root/projects/DataArchive/python/.venv/bin/python -m photo_harvest run --chunk 300 --budget 20
+journalctl -u photo-harvest-run -f          # watch
+cat /var/moo/photo-harvest/progress.json   # state, counts, spend
+systemctl stop photo-harvest-run           # stop; re-launch resumes
+```
+
 ### Where copies are looked for
 
 `/mnt/z/Harvest/<drive_code>/<path>`, then each alternate root

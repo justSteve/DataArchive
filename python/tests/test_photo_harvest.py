@@ -236,6 +236,27 @@ class HarvestTest(unittest.TestCase):
                 store.update(conn, "x", status="sent-ish")
 
 
+class RunLoopTest(unittest.TestCase):
+    """The unattended loop: it must stop on the spending stop, not retry it."""
+
+    def test_spending_stop_ends_the_run(self):
+        from unittest import mock
+        from photo_harvest import send
+        tmp = Path(tempfile.mkdtemp())
+        db = tmp / "a.db"
+        conn = sqlite3.connect(db)
+        conn.executescript(CATALOG)
+        conn.executescript(MIGRATION.read_text())
+        conn.execute("INSERT INTO photo_harvest (sha256, source_path, status) VALUES ('x', '/x', 'ready')")
+        conn.commit()
+        conn.close()
+        cfg = SimpleNamespace(db_path=db)
+        with mock.patch.object(cli, "PROGRESS", tmp / "p.json"), \
+             mock.patch.object(send, "run_batch", side_effect=send.SendError("spending stop: test")):
+            self.assertEqual(cli.cmd_run(cfg, SimpleNamespace(chunk=10, budget=1.0)), 4)
+        self.assertEqual(json.loads((tmp / "p.json").read_text())["state"], "stopped")
+
+
 class SendTest(HarvestTest):
     """Result handling, with fake batch results shaped like the SDK's."""
 
