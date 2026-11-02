@@ -35,6 +35,9 @@ def main() -> int:
     ap.add_argument("--label", required=True, help="human label for the drive record")
     ap.add_argument("--model", required=True, help="what this backup is, for the drive record")
     ap.add_argument("--no-hash", action="store_true", help="catalog only (default hashes every file >= 1 KB)")
+    ap.add_argument("--files-from", type=Path,
+                    help="scan only these files: one path per line, relative to root (an import "
+                         "that landed beside older files, e.g. a phone import into Pictures)")
     args = ap.parse_args()
 
     if not os.path.isdir(args.root):
@@ -58,6 +61,9 @@ def main() -> int:
         }
 
     scan_drive_win.get_drive_identity = bridge_identity
+    if args.files_from:
+        listed = listed_walk(args.root, args.files_from)
+        scan_drive_win.os.walk = lambda root, *a, **k: listed  # the scanner's only walk
     out = REPO / "Harvester" / "manifests" / f"scan-{args.drive_code}-{datetime.now():%Y%m%d}.jsonl"
     argv = [args.root, "--drive-code", args.drive_code, "--drive-label", args.label,
             "--output", str(out), "--no-progress"]
@@ -68,6 +74,17 @@ def main() -> int:
     if rc == 0:
         fix_scan_source(out, args.root)
     return rc
+
+
+def listed_walk(root: str, list_file: Path) -> list:
+    """os.walk-shaped (dir, [], files) tuples for just the listed files, grouped by folder."""
+    by_dir: dict[str, list[str]] = {}
+    for line in list_file.read_text(encoding="utf-8").splitlines():
+        rel = line.strip().lstrip("./")
+        if rel:
+            d, _, name = os.path.join(root, rel).rpartition("/")
+            by_dir.setdefault(d, []).append(name)
+    return [(d, [], names) for d, names in sorted(by_dir.items())]
 
 
 def fix_scan_source(out: Path, root: str) -> None:
