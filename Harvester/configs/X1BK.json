@@ -1,0 +1,7 @@
+{
+  "label": "X1BK",
+  "drive_letter": "W",
+  "source_root": "W:\\X1-backup",
+  "exclude_ext": [".exe", ".dll", ".msi", ".msp", ".ocx", ".sys", ".drv", ".com", ".scr", ".cpl", ".iso", ".cab", ".cat"],
+  "exclude_paths": ["$RECYCLE.BIN", "System Volume Information"]
+}

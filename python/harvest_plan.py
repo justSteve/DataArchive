@@ -11,6 +11,7 @@ Usage:
     python harvest_plan.py --config /mnt/c/Users/steve/OneDrive/Tools/DataArchiver/configs/Tera1A.json
 """
 
+import os
 import sys
 import json
 import sqlite3
@@ -62,6 +63,58 @@ def load_shadow_index(db, current_label):
     return idx
 
 
+def norm_hash(h):
+    """One spelling for a fingerprint. The catalog and the progress files hold some
+    upper-case (PowerShell's Get-FileHash: WWYY, Tera1A) and some 'sha256:'-prefixed."""
+    if not h:
+        return None
+    h = h.strip().lower()
+    return h[7:] if h.startswith("sha256:") else h
+
+
+# Drives harvested without a progress file: their catalog stands in for the copy record,
+# and --verify-root confirms each twin on disk. Value: the folder their catalog paths sit
+# under inside Z:\Harvest\<code> (NASR was scanned at M:\OldNAS, copied to ...\NASR\OldNAS).
+CATALOG_CLAIM_DRIVES = {"DVRC": "", "Tera1A": "", "NASR": "OldNAS\\"}
+
+
+def archive_path(dst, z_root):
+    """Where a claimed copy sits on the archive disk. Older harvests staged to W: or F:
+    (W:\\DTJX\\...) before landing in Z:\\Harvest\\<code>; newer ones name Z: directly."""
+    p = dst.replace("\\", "/")
+    if len(p) > 1 and p[1] == ":":
+        p = p[2:]
+    p = p.lstrip("/")
+    if p.lower().startswith("harvest/"):
+        p = p[len("harvest/"):]
+    return f"{z_root.rstrip('/')}/Harvest/{p}"
+
+
+def _same_size(path, size):
+    try:
+        return os.path.getsize(path) == size
+    except OSError:
+        return False
+
+
+def load_catalog_claims(db, code, prefix):
+    """hash -> Z:\\Harvest\\<code>\\<prefix><path> for every sha256 the catalog holds for code."""
+    claims = {}
+    rows = db.execute("""
+        SELECT fh.hash_value, f.path
+        FROM file_hashes fh
+        JOIN files f ON fh.file_id = f.file_id
+        JOIN scans s ON f.scan_id = s.scan_id
+        JOIN drives d ON s.drive_id = d.drive_id
+        WHERE d.drive_code = ? AND fh.hash_type = 'sha256'
+    """, (code,))
+    for hash_value, path in rows:
+        h = norm_hash(hash_value)
+        if h:
+            claims.setdefault(h, f"Z:\\Harvest\\{code}\\{prefix}{path.replace('/', chr(92))}")
+    return claims
+
+
 def load_claimed_hashes(progress_dir):
     """Load hashes already claimed by prior harvests."""
     claimed = {}  # hash -> destination path
@@ -78,29 +131,12 @@ def load_claimed_hashes(progress_dir):
                 try:
                     rec = json.loads(line)
                     if rec.get("status") == "done" and rec.get("hash"):
-                        claimed[rec["hash"]] = rec.get("dst", rec.get("src", ""))
+                        claimed[norm_hash(rec["hash"])] = rec.get("dst", rec.get("src", ""))
                 except json.JSONDecodeError:
                     continue
     return claimed
 
 
-def load_dvrc_hashes(db):
-    """Load all sha256 hashes from the DVRC drive (canonical C: pre-repave capture).
-
-    Returns dict of hash -> DVRC file path.
-    """
-    dvrc_hashes = {}
-    rows = db.execute("""
-        SELECT fh.hash_value, f.path
-        FROM file_hashes fh
-        JOIN files f ON fh.file_id = f.file_id
-        JOIN scans s ON f.scan_id = s.scan_id
-        JOIN drives d ON s.drive_id = d.drive_id
-        WHERE d.drive_code = 'DVRC' AND fh.hash_type = 'sha256'
-    """).fetchall()
-    for hash_value, path in rows:
-        dvrc_hashes[hash_value] = path
-    return dvrc_hashes
 
 
 def normalize_path(p):
@@ -149,11 +185,17 @@ def main():
     parser.add_argument('--config', required=True, help='Path to drive config JSON')
     parser.add_argument('--db', default=DB_PATH, help='Database path')
     parser.add_argument('--staging', default='W:', help='Staging drive letter')
+    parser.add_argument('--verify-root', default=None,
+                        help='the archive disk as WSL sees it (/mnt/z): a file is skipped as a '
+                             'duplicate only when its twin is there at the same size; otherwise '
+                             'it is copied and marked dupe_unverified')
     args = parser.parse_args()
 
     config = load_config(args.config)
     label = config['label']
     drive_letter = config['drive_letter']
+    # A folder backup (W:\X1-backup) is catalogued relative to the folder, not the drive root.
+    source_root = config.get('source_root') or f"{drive_letter}:"
     scan_id = config.get('scan_id')
 
     includes = config.get('include', [])
@@ -184,17 +226,18 @@ def main():
     claimed = load_claimed_hashes(progress_dir)
     print(f"  {len(claimed)} hashes claimed by prior harvests")
 
-    # DVRC-canonical dedup: when processing any non-DVRC drive, pre-claim all
-    # DVRC hashes so its copies are treated as canonical and duplicates on
-    # other drives are automatically skipped.
-    if label != 'DVRC':
-        dvrc_hashes = load_dvrc_hashes(db)
+    # Drives harvested without a progress file (DVRC, the canonical C: capture, and
+    # Tera1A, NASR): pre-claim their catalog hashes. Without --verify-root these are
+    # trusted as before; with it, each twin is checked on disk before a skip.
+    for code, prefix in CATALOG_CLAIM_DRIVES.items():
+        if code == label:
+            continue
         pre_claimed = 0
-        for h, dvrc_path in dvrc_hashes.items():
+        for h, z_path in load_catalog_claims(db, code, prefix).items():
             if h not in claimed:
-                claimed[h] = f"[DVRC] {dvrc_path}"
+                claimed[h] = z_path
                 pre_claimed += 1
-        print(f"  {len(dvrc_hashes)} DVRC hashes loaded, {pre_claimed} new pre-claims")
+        print(f"  {code}: {pre_claimed} new pre-claims from the catalog")
 
     # Load file hashes for this scan
     file_hashes = {}
@@ -202,7 +245,8 @@ def main():
         "SELECT file_id, hash_value FROM file_hashes WHERE scan_id = ? AND hash_type = 'sha256'",
         (scan_id,)
     ):
-        file_hashes[file_id] = hash_value
+        file_hashes[file_id] = norm_hash(hash_value)
+    claimed_this_run = set()   # copies planned in this manifest; not on disk yet, trusted
 
     print(f"  {len(file_hashes)} files have hashes")
 
@@ -232,7 +276,7 @@ def main():
             ext_lower = (ext or '').lower()
 
             # Build record
-            src = f"{drive_letter}:\\{path.replace('/', chr(92))}"
+            src = f"{source_root}\\{path.replace('/', chr(92))}"
             rec = {"src": src, "size": size_bytes or 0}
 
             # Check hash
@@ -281,12 +325,18 @@ def main():
 
             # Dedup
             if h and h in claimed:
-                rec["action"] = "skip:dupe"
-                rec["dst"] = None
-                rec["dupe_of"] = claimed[h]
-                stats['skip:dupe'] += 1
-                mf.write(json.dumps(rec) + '\n')
-                continue
+                twin = claimed[h]
+                verified = (args.verify_root is None or h in claimed_this_run
+                            or _same_size(archive_path(twin, args.verify_root), size_bytes))
+                if verified:
+                    rec["action"] = "skip:dupe"
+                    rec["dst"] = None
+                    rec["dupe_of"] = twin
+                    stats['skip:dupe'] += 1
+                    mf.write(json.dumps(rec) + '\n')
+                    continue
+                rec["dupe_unverified"] = twin   # the catalog says archived; the disk disagrees
+                stats['dupe_unverified'] += 1
 
             # ── Copy ──
             dst_path = f"{staging_root}\\{path.replace('/', chr(92))}"
@@ -304,6 +354,7 @@ def main():
             # Claim the hash
             if h:
                 claimed[h] = dst_path
+                claimed_this_run.add(h)
 
             mf.write(json.dumps(rec) + '\n')
 
@@ -318,6 +369,7 @@ def main():
     print(f"  Skip(ext):  {stats['skip:ext']:>8} files")
     print(f"  Skip(path): {stats['skip:path']:>8} files")
     print(f"  Skip(dupe): {stats['skip:dupe']:>8} files")
+    print(f"    copied because the twin was not on the archive disk: {stats['dupe_unverified']:>6}")
     print(f"  Skip(zero): {stats['skip:zero']:>8} files")
     total = sum(v for k, v in stats.items() if k not in ('total_copy_bytes', 'shadow_flagged'))
     print(f"  Total:      {total:>8} files")
