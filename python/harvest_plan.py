@@ -371,7 +371,7 @@ def main():
     print(f"  Skip(dupe): {stats['skip:dupe']:>8} files")
     print(f"    copied because the twin was not on the archive disk: {stats['dupe_unverified']:>6}")
     print(f"  Skip(zero): {stats['skip:zero']:>8} files")
-    total = sum(v for k, v in stats.items() if k not in ('total_copy_bytes', 'shadow_flagged'))
+    total = sum(v for k, v in stats.items() if k not in ('total_copy_bytes', 'shadow_flagged', 'dupe_unverified'))
     print(f"  Total:      {total:>8} files")
 
     print(f"\n── Execute in elevated PowerShell: ──")
