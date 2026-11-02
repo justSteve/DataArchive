@@ -39,12 +39,20 @@ def thumb(path: str) -> str:
         return ""
 
 
-def render(cfg: Config, out: Path = PAGE, limit: int = 300) -> Path:
+def render(cfg: Config, out: Path = PAGE, limit: int = 300, drive: str | None = None,
+           title: str = "Photo Harvest Pilot") -> Path:
+    """drive limits the page to one source (IPHN: the 2026-11-02 iPhone import), newest first."""
     with store.connect(cfg.db_path) as conn:
-        rows = conn.execute(
-            """SELECT * FROM photo_harvest WHERE status = 'described'
-               AND COALESCE(model_sensitive, 0) = 0
-               ORDER BY taken_at IS NULL, taken_at LIMIT ?""", (limit,)).fetchall()
+        if drive:
+            rows = conn.execute(
+                """SELECT * FROM photo_harvest WHERE status = 'described'
+                   AND COALESCE(model_sensitive, 0) = 0 AND drive_code = ?
+                   ORDER BY taken_at IS NULL, taken_at DESC LIMIT ?""", (drive, limit)).fetchall()
+        else:
+            rows = conn.execute(
+                """SELECT * FROM photo_harvest WHERE status = 'described'
+                   AND COALESCE(model_sensitive, 0) = 0
+                   ORDER BY taken_at IS NULL, taken_at LIMIT ?""", (limit,)).fetchall()
         counts = store.counts(conn)
         tokens = conn.execute("SELECT SUM(input_tokens), SUM(output_tokens), COUNT(*) "
                               "FROM photo_harvest WHERE input_tokens IS NOT NULL").fetchone()
@@ -71,7 +79,7 @@ def render(cfg: Config, out: Path = PAGE, limit: int = 300) -> Path:
                f"about ${cost:.3f} so far")
     out.write_text(f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Photo Harvest Pilot</title>
+<title>{html.escape(title)}</title>
 <style>
 :root{{--bg:#fbfaf7;--fg:#1d1d1b;--mute:#6b6b66;--card:#fff;--line:#e4e1d8;--accent:#2f5d8a}}
 @media (prefers-color-scheme:dark){{:root:not([data-theme="light"]){{--bg:#161615;--fg:#ecebe6;--mute:#9a9992;--card:#1f1f1d;--line:#33322e;--accent:#8fb6dc}}}}
@@ -84,8 +92,8 @@ img{{width:100%;height:200px;object-fit:cover;display:block;background:var(--lin
 figcaption{{padding:8px 10px}} p{{margin:.2rem 0}} .d{{font-weight:500}}
 .t{{color:var(--accent);font-size:.85rem}} .m,.p{{color:var(--mute);font-size:.78rem}} .p{{word-break:break-all}}
 </style></head><body>
-<h1>Photo Harvest Pilot</h1>
-<p class="s">{html.escape(summary)}</p>
+<h1>{html.escape(title)}</h1>
+<p class="s">{f"{len(rows)} photos shown, newest first · " if drive else ""}{html.escape(summary)}</p>
 <main>{''.join(cards)}</main>
 </body></html>""", encoding="utf-8")
     out.chmod(0o644)

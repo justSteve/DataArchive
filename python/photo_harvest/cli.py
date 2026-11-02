@@ -99,8 +99,9 @@ def cmd_collect(cfg: Config, args) -> int:
 
 
 def cmd_page(cfg: Config, args) -> int:
-    from .render import render
-    print(render(cfg))
+    from .render import PAGE, render
+    print(render(cfg, out=args.out or PAGE, limit=args.limit, drive=args.drive,
+                 title=args.title or "Photo Harvest Pilot"))
     return 0
 
 
@@ -176,7 +177,11 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("status")
     sub.add_parser("held")
     sub.add_parser("check")
-    sub.add_parser("page")
+    pg = sub.add_parser("page")
+    pg.add_argument("--drive", help="only this source's photos, newest first (e.g. IPHN)")
+    pg.add_argument("--title")
+    pg.add_argument("--out", type=Path)
+    pg.add_argument("--limit", type=int, default=300)
     sp = sub.add_parser("send")
     sp.add_argument("--size", type=int, default=200)
     sp.add_argument("--budget", type=float, default=20.0, help="spending stop, USD")
