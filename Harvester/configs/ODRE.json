@@ -1,0 +1,7 @@
+{
+  "label": "ODRE",
+  "drive_letter": "C",
+  "source_root": "/var/moo/onedrive/staging-empties",
+  "exclude_ext": [".exe", ".dll", ".msi", ".msp", ".ocx", ".sys", ".drv", ".com", ".scr", ".cpl", ".iso", ".cab", ".cat"],
+  "exclude_paths": []
+}
